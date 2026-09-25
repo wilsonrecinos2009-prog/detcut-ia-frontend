@@ -511,6 +511,115 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
   .summary-text, .recs-text, .med-purpose, .diff-name { color: #333; }
 }
 
+/* ─── RESPONSIVE MÓVIL ───────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* LOGIN: ocultar panel izquierdo */
+  #loginScreen {
+    grid-template-columns: 1fr !important;
+  }
+  .login-left {
+    display: none !important;
+  }
+  .login-right {
+    padding: 40px 24px;
+    border-left: none;
+    min-height: 100vh;
+  }
+  .login-box {
+    max-width: 100%;
+  }
+
+  /* TOPBAR compacta */
+  .topbar {
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .status-badge {
+    display: none;
+  }
+  .user-chip {
+    font-size: 11px;
+    padding: 4px 10px 4px 5px;
+  }
+
+  /* LAYOUT: una sola columna */
+  .layout {
+    grid-template-columns: 1fr !important;
+    padding: 12px;
+    gap: 12px;
+  }
+  .sidebar { order: 1; }
+  .main   { order: 2; }
+
+  /* HISTORIAL reducido */
+  .recent-list {
+    max-height: 200px;
+  }
+
+  /* REPORTE: una sola columna */
+  .report-body {
+    grid-template-columns: 1fr !important;
+    padding: 16px;
+    gap: 16px;
+  }
+  .report-image {
+    max-width: 200px;
+    margin: 0 auto;
+  }
+  .report-image-col {
+    align-items: center;
+  }
+  .report-header {
+    padding: 16px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .report-disease {
+    font-size: 18px;
+  }
+
+  /* ZONA DE CARGA más grande para dedos */
+  .upload-zone {
+    padding: 36px 16px;
+  }
+  .upload-zone p {
+    font-size: 15px;
+  }
+
+  /* BOTONES más grandes */
+  .btn-primary {
+    padding: 13px 16px;
+    font-size: 15px;
+  }
+  .btn-login {
+    padding: 14px;
+    font-size: 15px;
+  }
+
+  /* INPUTS: font-size 16px evita zoom en iOS */
+  .field-input,
+  .input-field {
+    padding: 13px 14px;
+    font-size: 16px;
+  }
+
+  /* TOAST abajo */
+  .toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    max-width: 100%;
+  }
+
+  /* EMPTY STATE más compacto */
+  .empty-report {
+    min-height: 200px;
+    padding: 24px;
+  }
+}
+
 </style>
 </head>
 <body>
