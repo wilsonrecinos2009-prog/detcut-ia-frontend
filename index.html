@@ -757,6 +757,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
         <div class="card-label">Nuevo escaneo</div>
         <div class="card-title">Analizar lesión</div>
         <input type="text" id="patientRef" class="input-field" placeholder="Ref. paciente (ej. PAC-0421)">
+        <input type="email" id="patientEmail" class="input-field" placeholder="Correo del paciente (opcional)">
         <div style="position:relative;">
           <label class="upload-zone" id="uploadZone" for="fileInput">
             <input type="file" id="fileInput" accept="image/*">
@@ -817,7 +818,11 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
               <span class="badge badge-meta" id="rMeta">—</span>
             </div>
           </div>
-          <button class="btn btn-ghost no-print" onclick="window.print()">🖨 Imprimir</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost no-print" onclick="enviarPorCorreo()">✉ Enviar por correo</button>
+            <button class="btn btn-ghost no-print" onclick="abrirDoctorSV()">📲 Abrir en DoctorSV</button>
+            <button class="btn btn-ghost no-print" onclick="window.print()">🖨 Imprimir</button>
+          </div>
         </div>
         <div class="report-body">
           <div class="report-image-col">
@@ -1428,6 +1433,59 @@ async function exportMonth() {
   a.href = url; a.download = `diagnosticos_${mes.replace(' ', '_')}.csv`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   showToast(`Exportados ${data.length} diagnósticos ✓`, false);
+}
+
+// ─── ENVIAR DIAGNÓSTICO POR CORREO ─────────────────────────────────
+// Llama al backend de Render, que a su vez llama a Resend con la
+// API key guardada como variable de entorno en el servidor (nunca
+// aquí en el HTML).
+async function enviarPorCorreo() {
+  const diag = diagnoses.find(d => d.id === selectedId);
+  if (!diag) { showToast('No hay un diagnóstico seleccionado.', true); return; }
+
+  let email = document.getElementById('patientEmail').value.trim();
+  if (!email) {
+    email = prompt('Correo del paciente para enviar el diagnóstico:', '');
+    if (!email) return;
+  }
+
+  showToast('Enviando correo…', false);
+
+  try {
+    const res = await fetch(BACKEND_URL + '/send-diagnosis-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+      body: JSON.stringify({ email, diagnosis: diag })
+    });
+    const result = await res.json();
+    if (!res.ok || result.error) throw new Error(result.error || ('Error ' + res.status));
+    showToast('Correo enviado a ' + email + ' ✓', false);
+  } catch (err) {
+    showToast('No se pudo enviar el correo. (' + err.message + ')', true);
+  }
+}
+
+// ─── ABRIR / DESCARGAR DOCTORSV ─────────────────────────────────────
+// Android: intenta abrir la app instalada (por su package real);
+// si no está instalada, Chrome cae automáticamente a la Play Store.
+// iOS: no hay forma de detectar desde la web si la app ya está
+// instalada (eso requeriría que DoctorSV configure "universal links"
+// de su lado), así que lleva directo al App Store.
+// Escritorio / otros: abre la Play Store en una pestaña nueva.
+function abrirDoctorSV() {
+  const ANDROID_PACKAGE = 'com.tcass.goes.doctorsv';
+  const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=' + ANDROID_PACKAGE;
+  const APP_STORE_URL = 'https://apps.apple.com/sv/app/doctorsv/id6754052239';
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+  if (/android/i.test(ua)) {
+    const fallback = encodeURIComponent(PLAY_STORE_URL);
+    window.location.href = 'intent://#Intent;package=' + ANDROID_PACKAGE + ';scheme=https;S.browser_fallback_url=' + fallback + ';end';
+  } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+    window.location.href = APP_STORE_URL;
+  } else {
+    window.open(PLAY_STORE_URL, '_blank');
+  }
 }
 
 function setStatus(text, ok) {
