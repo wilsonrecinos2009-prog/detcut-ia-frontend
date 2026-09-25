@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DET-Cut IA · Acceso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg: #f4f8fc;
+  --surface: #ffffff;
+  --surface2: #f5f9ff;
+  --border: #dce7f2;
+  --primary: #2f7de6;
+  --primary-dim: rgba(47,125,230,0.12);
+  --primary-glow: rgba(47,125,230,0.18);
+  --text: #16324a;
+  --muted: #6d7b8a;
+  --warning: #c97a00;
+  --danger: #d64545;
+  --radius: 14px;
+  --font: 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; font-size: 14px; }
+
+/* ─── LOGIN ─────────────────────────────────────────── */
+#loginScreen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+.login-left {
+  background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 55%, #ffffff 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-left::before {
+  content: '';
+  position: absolute;
+  top: -100px; left: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.login-left::after {
+  content: '';
+  position: absolute;
+  bottom: -80px; right: -80px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(0,200,150,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 60px;
+}
+
+.brand-icon {
+  width: 48px; height: 48px;
+  background: var(--primary);
+  border-radius: 14px;
+  display: grid; place-items: center;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  letter-spacing: -0.5px;
+  box-shadow: 0 0 24px var(--primary-glow);
+}
+
+.brand-name {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.brand-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.login-headline {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin-bottom: 20px;
+}
+
+.login-headline span {
+  color: var(--primary);
+}
+
+.login-desc {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 380px;
+  margin-bottom: 48px;
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: rgba(22,50,74,0.8);
+}
+
+.feature-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+}
+
+/* ─── PANEL DERECHO ─────────────────────────────────── */
+.login-right {
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 48px;
+  border-left: 1px solid var(--border);
+}
+
+.login-box {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-tabs {
+  display: flex;
+  gap: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 32px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.login-form-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.login-form-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.field-group {
+  margin-bottom: 16px;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-dim);
+}
+
+.field-input::placeholder { color: var(--muted); }
+
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, box-shadow 0.2s;
+  margin-top: 8px;
+}
+
+.btn-login:hover { opacity: 0.9; box-shadow: 0 0 16px var(--primary-glow); }
+.btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.btn-google {
+  width: 100%;
+  padding: 11px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-google:hover { background: var(--surface2); border-color: var(--primary); }
+
+.google-icon {
+  width: 18px; height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+.auth-error {
+  background: rgba(248,81,73,0.1);
+  border: 1px solid rgba(248,81,73,0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--danger);
+  margin-bottom: 16px;
+  display: none;
+}
+
+.auth-success {
+  background: var(--primary-dim);
+  border: 1px solid rgba(0,200,150,0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--primary);
+  margin-bottom: 16px;
+  display: none;
+}
+
+/* ─── APP ───────────────────────────────────────────── */
+#appScreen { display: none; }
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+
+.logo-icon {
+  width: 38px; height: 38px;
+  background: var(--primary);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 13px;
+  color: #000;
+}
+
+.logo-text .title { font-weight: 700; font-size: 15px; letter-spacing: -0.3px; }
+.logo-text .sub { font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px 5px 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.user-avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: grid; place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #000;
+}
+
+.btn-logout {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+.status-badge { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: calc(100vh - 63px);
+}
+
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.card-label { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+
+.input-field { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-family: var(--font); font-size: 13px; outline: none; margin-bottom: 12px; transition: border-color 0.2s; }
+.input-field:focus { border-color: var(--primary); }
+.input-field::placeholder { color: var(--muted); }
+
+.upload-zone { display: block; border: 2px dashed var(--border); border-radius: 10px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg); }
+.upload-zone:hover { border-color: var(--primary); background: var(--primary-dim); }
+.upload-zone.dragging { border-color: var(--primary); background: var(--primary-dim); }
+.upload-icon { width: 40px; height: 40px; background: var(--primary-dim); border-radius: 50%; display: grid; place-items: center; margin: 0 auto 10px; color: var(--primary); font-size: 18px; }
+.upload-zone p { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.upload-zone span { font-size: 11px; color: var(--muted); }
+#fileInput { display: none; }
+
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 8px; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.2s; text-decoration: none; }
+.btn:hover { opacity: 0.85; }
+.btn-primary { background: var(--primary); color: #fff; width: 100%; justify-content: center; margin-top: 12px; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.spinner { display: none; flex-direction: column; align-items: center; gap: 10px; padding: 16px 0; }
+.spinner.active { display: flex; }
+.spin { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner span { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+
+.recent-list { display: flex; flex-direction: column; gap: 6px; max-height: 340px; overflow-y: auto; }
+.recent-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all 0.15s; }
+.recent-item:hover { background: var(--surface2); border-color: var(--border); }
+.recent-item.active { background: var(--primary-dim); border-color: var(--primary); }
+.recent-thumb { width: 44px; height: 44px; border-radius: 7px; background: var(--surface2); flex-shrink: 0; display: grid; place-items: center; font-size: 18px; overflow: hidden; }
+.recent-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.recent-info { flex: 1; min-width: 0; }
+.recent-disease { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-meta { font-size: 11px; color: var(--muted); }
+.recent-time { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.empty-list { text-align: center; padding: 24px 0; color: var(--muted); font-size: 12px; }
+
+.main { display: flex; flex-direction: column; gap: 16px; }
+.empty-report { display: grid; place-items: center; min-height: 500px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); text-align: center; padding: 40px; }
+.empty-report-icon { width: 56px; height: 56px; background: var(--surface2); border-radius: 50%; display: grid; place-items: center; margin: 0 auto 16px; font-size: 24px; }
+.empty-report h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.empty-report p { color: var(--muted); font-size: 13px; max-width: 300px; line-height: 1.6; }
+
+.report { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.report-header { background: linear-gradient(135deg, var(--primary-dim), transparent); border-bottom: 1px solid var(--border); padding: 20px 24px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.report-eyebrow { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 6px; }
+.report-disease { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+.report-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.badge-leve { background: rgba(0,200,150,0.2); color: var(--primary); }
+.badge-moderada { background: rgba(210,153,34,0.2); color: var(--warning); }
+.badge-severa { background: rgba(248,81,73,0.2); color: var(--danger); }
+.badge-normal { background: var(--primary-dim); color: var(--primary); }
+.badge-meta { background: var(--surface2); color: var(--muted); font-size: 11px; font-weight: 400; }
+
+.report-body { display: grid; grid-template-columns: 260px 1fr; gap: 24px; padding: 24px; }
+.report-image-col { display: flex; flex-direction: column; gap: 14px; }
+.report-image { width: 100%; aspect-ratio: 1; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: var(--surface2); display: grid; place-items: center; font-size: 48px; }
+.report-image img { width: 100%; height: 100%; object-fit: cover; }
+.confidence-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+.confidence-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.confidence-label { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); }
+.confidence-pct { font-size: 26px; font-weight: 800; font-family: var(--mono); color: var(--primary); }
+.confidence-bar { height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.confidence-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 1s ease; }
+.report-content-col { display: flex; flex-direction: column; gap: 20px; }
+.section-title { font-family: var(--mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 10px; }
+.summary-text { font-size: 13px; line-height: 1.7; color: #4a5568; }
+.med-list { display: flex; flex-direction: column; gap: 8px; }
+.med-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; }
+.med-header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
+.med-name { font-size: 13px; font-weight: 700; }
+.med-dose { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.med-purpose { font-size: 11px; color: var(--muted); }
+.recs-text { font-size: 13px; line-height: 1.7; color: #4a5568; }
+.diff-list { display: flex; flex-direction: column; gap: 8px; }
+.diff-item { display: flex; align-items: center; gap: 10px; }
+.diff-name { flex: 1; font-size: 13px; }
+.diff-bar-wrap { width: 100px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.diff-bar-fill { height: 100%; background: var(--muted); border-radius: 3px; }
+.diff-pct { font-family: var(--mono); font-size: 11px; color: var(--muted); width: 36px; text-align: right; }
+.disclaimer { display: flex; align-items: flex-start; gap: 10px; border-top: 1px dashed var(--border); padding-top: 16px; font-size: 11px; color: var(--muted); line-height: 1.6; }
+.disclaimer-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+.receipt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+.receipt-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.receipt-title { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); }
+.receipt-preview { background: #fff; color: #000; border-radius: 8px; padding: 16px; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6; max-width: 320px; margin: 0 auto; }
+.receipt-preview .r-center { text-align: center; }
+.receipt-preview .r-bold { font-weight: 700; }
+.receipt-preview .r-line { border-top: 1px dashed #999; margin: 6px 0; }
+.receipt-preview .r-dline { border-top: 2px solid #000; margin: 6px 0; }
+.receipt-preview .r-row { display: flex; justify-content: space-between; }
+.receipt-img { width: 80px; height: 80px; object-fit: cover; display: block; margin: 6px auto; }
+
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: 8px; padding: 12px 16px; font-size: 12px; max-width: 300px; z-index: 1000; display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+.toast.show { display: block; }
+.toast.error { border-left-color: var(--danger); }
+
+@media print {
+  #loginScreen { display: none !important; }
+  .topbar, .sidebar, .receipt-card, .btn-ghost, .no-print { display: none !important; }
+  .layout { display: block; padding: 0; }
+  .report { border: none; }
+  body { background: white; color: black; }
+  .report-header { background: none; }
+  .report-disease, .section-title { color: black; }
+  .confidence-fill { background: black; }
+  .med-item, .confidence-box { background: #f5f5f5; border-color: #ddd; }
+  .report-body { grid-template-columns: 200px 1fr; }
+  .summary-text, .recs-text, .med-purpose, .diff-name { color: #333; }
+}
+
+/* ─── RESPONSIVE MÓVIL ───────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* LOGIN: ocultar panel izquierdo */
+  #loginScreen {
+    grid-template-columns: 1fr !important;
+  }
+  .login-left {
+    display: none !important;
+  }
+  .login-right {
+    padding: 40px 24px;
+    border-left: none;
+    min-height: 100vh;
+  }
+  .login-box {
+    max-width: 100%;
+  }
+
+  /* TOPBAR compacta */
+  .topbar {
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .status-badge {
+    display: none;
+  }
+  .user-chip {
+    font-size: 11px;
+    padding: 4px 10px 4px 5px;
+  }
+
+  /* LAYOUT: una sola columna */
+  .layout {
+    grid-template-columns: 1fr !important;
+    padding: 12px;
+    gap: 12px;
+  }
+  .sidebar { order: 1; }
+  .main   { order: 2; }
+
+  /* HISTORIAL reducido */
+  .recent-list {
+    max-height: 200px;
+  }
+
+  /* REPORTE: una sola columna */
+  .report-body {
+    grid-template-columns: 1fr !important;
+    padding: 16px;
+    gap: 16px;
+  }
+  .report-image {
+    max-width: 200px;
+    margin: 0 auto;
+  }
+  .report-image-col {
+    align-items: center;
+  }
+  .report-header {
+    padding: 16px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .report-disease {
+    font-size: 18px;
+  }
+
+  /* ZONA DE CARGA más grande para dedos */
+  .upload-zone {
+    padding: 36px 16px;
+  }
+  .upload-zone p {
+    font-size: 15px;
+  }
+
+  /* BOTONES más grandes */
+  .btn-primary {
+    padding: 13px 16px;
+    font-size: 15px;
+  }
+  .btn-login {
+    padding: 14px;
+    font-size: 15px;
+  }
+
+  /* INPUTS: font-size 16px evita zoom en iOS */
+  .field-input,
+  .input-field {
+    padding: 13px 14px;
+    font-size: 16px;
+  }
+
+  /* TOAST abajo */
+  .toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    max-width: 100%;
+  }
+
+  /* EMPTY STATE más compacto */
+  .empty-report {
+    min-height: 200px;
+    padding: 24px;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ LOGIN ═══════════════════════════ -->
+<div id="loginScreen" style="display:grid;">
+
+  <!-- LADO IZQUIERDO — Branding -->
+  <div class="login-left">
+    <div class="brand-mark">
+      <div class="brand-icon">DET</div>
+      <div>
+        <div class="brand-name">DET-Cut IA</div>
+        <div class="brand-sub">· Dermatología</div>
+      </div>
+    </div>
+
+    <div class="login-headline">
+      Diagnóstico<br>dermatológico<br><span>con IA</span>
+    </div>
+
+    <p class="login-desc">
+      Sistema de apoyo clínico para la detección temprana de patologías cutáneas. Diseñado para médicos generales y personal de salud en El Salvador.
+    </p>
+
+    <div class="features">
+      <div class="feature-item"><div class="feature-dot"></div>Análisis de imágenes con red neuronal CNN</div>
+      <div class="feature-item"><div class="feature-dot"></div>6 patologías cutáneas identificables</div>
+      <div class="feature-item"><div class="feature-dot"></div>Reportes clínicos e impresión inmediata</div>
+      <div class="feature-item"><div class="feature-dot"></div>Historial guardado en base de datos segura</div>
+      <div class="feature-item"><div class="feature-dot"></div>Exportación mensual de diagnósticos en CSV</div>
+    </div>
+  </div>
+
+  <!-- LADO DERECHO — Formulario -->
+  <div class="login-right">
+    <div class="login-box">
+
+      <div class="login-tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Iniciar sesión</button>
+        <button class="tab-btn" onclick="switchTab('register')">Registrarse</button>
+      </div>
+
+      <div id="authError" class="auth-error"></div>
+      <div id="authSuccess" class="auth-success"></div>
+
+      <!-- FORMULARIO LOGIN -->
+      <div id="formLogin">
+        <div class="login-form-title">Bienvenido</div>
+        <p class="login-form-sub">Ingresa tus credenciales para acceder al sistema.</p>
+
+        <div class="field-group">
+          <label class="field-label">Correo electrónico</label>
+          <input type="email" id="loginEmail" class="field-input" placeholder="doctor@clinica.com">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Contraseña</label>
+          <input type="password" id="loginPassword" class="field-input" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+
+        <button class="btn-login" id="btnLogin" onclick="doLogin()">Iniciar sesión</button>
+
+        <div class="divider">o continúa con</div>
+
+        <button class="btn-google" onclick="doGoogleLogin()">
+          <div class="google-icon"></div>
+          Continuar con Google
+        </button>
+      </div>
+
+      <!-- FORMULARIO REGISTRO -->
+      <div id="formRegister" style="display:none;">
+        <div class="login-form-title">Crear cuenta</div>
+        <p class="login-form-sub">Regístrate para usar el sistema DET-Cut IA.</p>
+
+        <div class="field-group">
+          <label class="field-label">Nombre completo</label>
+          <input type="text" id="regName" class="field-input" placeholder="Dr. María López">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Correo electrónico</label>
+          <input type="email" id="regEmail" class="field-input" placeholder="doctor@clinica.com">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Contraseña</label>
+          <input type="password" id="regPassword" class="field-input" placeholder="Mínimo 6 caracteres" onkeydown="if(event.key==='Enter') doRegister()">
+        </div>
+
+        <button class="btn-login" id="btnRegister" onclick="doRegister()">Crear cuenta</button>
+
+        <div class="divider">o regístrate con</div>
+
+        <button class="btn-google" onclick="doGoogleLogin()">
+          <div class="google-icon"></div>
+          Continuar con Google
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ APP ═══════════════════════════ -->
+<div id="appScreen" style="display:none;">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-icon">DET</div>
+      <div class="logo-text">
+        <div class="title">DET-Cut IA</div>
+        <div class="sub">Panel de Diagnóstico</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="status-badge">
+        <div class="dot" id="statusDot"></div>
+        <span id="statusText">Conectando...</span>
+      </div>
+      <div class="user-chip">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span id="userEmail">—</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar no-print">
+
+      <div class="card">
+        <div class="card-label">Nuevo escaneo</div>
+        <div class="card-title">Analizar lesión</div>
+        <input type="text" id="patientRef" class="input-field" placeholder="Ref. paciente (ej. PAC-0421)">
+        <input type="email" id="patientEmail" class="input-field" placeholder="Correo del paciente (opcional)">
+        <div style="position:relative;">
+          <label class="upload-zone" id="uploadZone" for="fileInput">
+            <input type="file" id="fileInput" accept="image/*">
+            <div class="upload-icon">⬆</div>
+            <p>Arrastra o haz clic aquí</p>
+            <span>JPG, PNG · desde cámara o prototipo</span>
+          </label>
+          <button type="button" id="removeImageBtn" onclick="removeSelectedImage(event)"
+            style="display:none;position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;
+            background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;
+            cursor:pointer;align-items:center;justify-content:center;z-index:5;">✕</button>
+        </div>
+        <div class="spinner" id="spinner">
+          <div class="spin"></div>
+          <span>Analizando con IA…</span>
+        </div>
+        <button class="btn btn-primary no-print" id="analyzeBtn" onclick="runAnalysis()">
+          ▶ Analizar imagen
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Diagnósticos recientes</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span class="card-title" style="margin:0;">Historial</span>
+          <span id="recentCount" style="font-family:var(--mono);font-size:10px;color:var(--muted);">0</span>
+        </div>
+        <div class="recent-list" id="recentList">
+          <div class="empty-list">Cargando...</div>
+        </div>
+        <button class="btn btn-ghost no-print" onclick="clearHistory()" style="width:100%;justify-content:center;margin-top:12px;font-size:12px;color:var(--danger);border-color:var(--danger);">
+          🗑 Borrar historial
+        </button>
+        <button class="btn btn-ghost no-print" onclick="exportMonth()" style="width:100%;justify-content:center;margin-top:8px;font-size:12px;">
+          ⬇ Exportar mes (CSV)
+        </button>
+      </div>
+
+    </aside>
+
+    <main class="main">
+
+      <div class="empty-report" id="emptyReport">
+        <div>
+          <div class="empty-report-icon">🔬</div>
+          <h2>Sin diagnóstico seleccionado</h2>
+          <p>Sube una imagen de la lesión cutánea o selecciona un diagnóstico del historial para ver el reporte completo.</p>
+        </div>
+      </div>
+
+      <div class="report" id="reportCard" style="display:none;">
+        <div class="report-header">
+          <div>
+            <div class="report-eyebrow">Reporte de Diagnóstico · DET-Cut IA</div>
+            <div class="report-disease" id="rDisease">—</div>
+            <div class="report-badges">
+              <span class="badge" id="rSeverityBadge">—</span>
+              <span class="badge badge-meta" id="rMeta">—</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost no-print" onclick="enviarPorCorreo()">✉ Enviar por correo</button>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <button class="btn btn-ghost no-print" onclick="abrirDoctorSV()">📲 Abrir en DoctorSV</button>
+              <span style="font-size:11px;color:#6b8cae;text-align:center;">Para un mejor diagnóstico, contacta con un especialista</span>
+            </div>
+            <button class="btn btn-ghost no-print" onclick="window.print()">🖨 Imprimir</button>
+          </div>
+        </div>
+        <div class="report-body">
+          <div class="report-image-col">
+            <div class="report-image" id="rImageBox">🖼</div>
+            <div class="confidence-box">
+              <div class="confidence-header">
+                <span class="confidence-label">Confianza IA</span>
+                <span class="confidence-pct" id="rPct">—</span>
+              </div>
+              <div class="confidence-bar">
+                <div class="confidence-fill" id="rBar" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="report-content-col">
+            <div><div class="section-title">Resumen Clínico</div><p class="summary-text" id="rSummary">—</p></div>
+            <div><div class="section-title">Medicamentos Sugeridos</div><div class="med-list" id="rMeds">—</div></div>
+            <div><div class="section-title">Recomendaciones</div><p class="recs-text" id="rRecs">—</p></div>
+            
+            <div><div class="section-title">Diagnóstico Diferencial</div><div class="diff-list" id="rDiff">—</div></div>
+            <div class="disclaimer">
+              <span class="disclaimer-icon">ℹ</span>
+              <span>Este reporte es generado por IA y sirve como <strong>apoyo</strong> al diagnóstico clínico. La decisión final corresponde al profesional médico tratante.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="receipt-card no-print" id="receiptCard" style="display:none;">
+        <div class="receipt-header">
+          <span class="receipt-title">Vista previa de recibo imprimible</span>
+          <button class="btn btn-ghost" onclick="window.print()" style="padding:6px 12px;font-size:12px;">🖨 Imprimir recibo</button>
+        </div>
+        <div class="receipt-preview" id="receiptContent">—</div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── SUPABASE ────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://nmmhzopwagapgdmaxzti.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tbWh6b3B3YWdhcGdkbWF4enRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NjQ1NDEsImV4cCI6MjA5ODU0MDU0MX0.KdXzGgwZ-dLJF3vlxkb5nUhIkiyRV0I9PKGFO5BqNzw';
+let db = null;
+
+// Supabase se inicializa en window.addEventListener(load)
+
+
+// ─── BACKEND URL (actualiza cuando reinicies Colab) ──────────────
+let BACKEND_URL = 'https://detcut-ia-backend.onrender.com';
+
+// ─── DATOS CLÍNICOS POR ENFERMEDAD ──────────────────────────────
+const DISEASE_DATA = {
+  'Psoriasis': {
+    severity: 'Moderada',
+    summary: 'La psoriasis es una enfermedad crónica de la piel que provoca la acumulación rápida de células cutáneas, formando escamas y manchas rojas que pueden picar o doler. Es una condición autoinmune y no es contagiosa.',
+    medications: [
+      { name: 'Betametasona crema 0.1%', dosage: '2 veces/día', purpose: 'Reduce la inflamación y el enrojecimiento local' },
+      { name: 'Calcipotriol pomada', dosage: '1-2 veces/día', purpose: 'Regula el crecimiento de las células de la piel' },
+      { name: 'Metotrexato 7.5mg', dosage: 'Semanal', purpose: 'Medicamento sistémico para casos moderados-severos' }
+    ],
+    recommendations: 'Mantener la piel hidratada con emolientes sin fragancia. Evitar el estrés y los traumatismos en la piel. No rascar las lesiones. Consultar al dermatólogo para tratamiento sistémico si las lesiones son extensas.',
+    differential: [{ disease: 'Dermatitis Atópica', probability: 0.12 }, { disease: 'Eczema', probability: 0.08 }]
+  },
+  'Eczema': {
+    severity: 'Leve',
+    summary: 'El eczema es una condición que hace que la piel se inflame y se ponga rojiza, generalmente como respuesta a desencadenantes ambientales o alérgicos. Se caracteriza por picor intenso, sequedad y formación de costras.',
+    medications: [
+      { name: 'Hidrocortisona crema 1%', dosage: '2-3 veces/día', purpose: 'Alivia la inflamación y el picor' },
+      { name: 'Tacrolimus ungüento 0.1%', dosage: '2 veces/día', purpose: 'Inmunomodulador tópico para zonas sensibles' },
+      { name: 'Loratadina 10mg', dosage: '1 vez/día', purpose: 'Antihistamínico para reducir el picor' }
+    ],
+    recommendations: 'Bañarse con agua tibia y duración corta. Aplicar crema hidratante inmediatamente después del baño. Usar jabones sin fragancia. Evitar telas sintéticas.',
+    differential: [{ disease: 'Psoriasis', probability: 0.15 }, { disease: 'Dermatitis Atópica', probability: 0.20 }]
+  },
+  'Dermatitis Atopica': {
+    severity: 'Moderada',
+    summary: 'La dermatitis atópica es una enfermedad inflamatoria crónica de la piel que suele comenzar en la infancia. Se caracteriza por piel seca, picor intenso y lesiones eccematosas. Tiene una base genética importante.',
+    medications: [
+      { name: 'Dupilumab 300mg', dosage: 'Cada 2 semanas (inyección)', purpose: 'Biológico de primera línea para DA moderada-severa' },
+      { name: 'Mometasona furoato 0.1%', dosage: '1 vez/día', purpose: 'Corticosteroide tópico de potencia media' },
+      { name: 'Cetirizina 10mg', dosage: 'Noche', purpose: 'Antihistamínico para el picor nocturno' }
+    ],
+    recommendations: 'Rutina diaria de hidratación con emolientes ricos. Usar ropa suave de algodón. Mantener temperatura ambiental fresca. Control periódico con dermatólogo.',
+    differential: [{ disease: 'Eczema', probability: 0.25 }, { disease: 'Psoriasis', probability: 0.10 }]
+  },
+  'Seborrheic Keratosis': {
+    severity: 'Leve',
+    summary: 'La queratosis seborreica es un crecimiento cutáneo benigno no canceroso muy común. Se caracteriza por lesiones de color marrón o negro con superficie verrugosa. No requieren tratamiento a menos que sean molestas.',
+    medications: [
+      { name: 'Ácido tricloroacético 35%', dosage: 'Aplicación clínica única', purpose: 'Cauterización química de la lesión' },
+      { name: 'Peróxido de hidrógeno 40%', dosage: 'Aplicación clínica', purpose: 'Tratamiento aprobado para queratosis seborreica' }
+    ],
+    recommendations: 'No es necesario tratamiento si no molesta. Evitar rascarse. Consultar si la lesión cambia de tamaño, forma o color.',
+    differential: [{ disease: 'Basal Cell Carcinoma', probability: 0.08 }, { disease: 'Warts Molluscum', probability: 0.12 }]
+  },
+  'Warts Molluscum': {
+    severity: 'Leve',
+    summary: 'El molluscum contagioso es una infección viral causada por el virus Molluscum contagiosum. Se manifiesta como pequeñas protuberancias redondas con una depresión central. Es altamente contagioso por contacto directo.',
+    medications: [
+      { name: 'Imiquimod crema 5%', dosage: '3 veces por semana', purpose: 'Estimula el sistema inmune para eliminar el virus' },
+      { name: 'Ácido salicílico 17%', dosage: '1 vez/día', purpose: 'Destruye el tejido infectado localmente' }
+    ],
+    recommendations: 'Evitar tocar o rascar las lesiones. No compartir toallas ni artículos personales. Las lesiones suelen desaparecer solas en 6-12 meses.',
+    differential: [{ disease: 'Seborrheic Keratosis', probability: 0.10 }, { disease: 'Eczema', probability: 0.07 }]
+  },
+  'Basal Cell Carcinoma': {
+    severity: 'Severa',
+    summary: 'El carcinoma basocelular es el tipo más común de cáncer de piel. Raramente se propaga a otros órganos pero REQUIERE ATENCIÓN MÉDICA URGENTE. La exposición prolongada al sol es el principal factor de riesgo.',
+    medications: [
+      { name: 'Vismodegib 150mg', dosage: '1 vez/día (oral)', purpose: 'Inhibidor de la vía Hedgehog para casos avanzados' },
+      { name: 'Imiquimod crema 5%', dosage: '5 veces/semana x 6 semanas', purpose: 'Para lesiones superficiales pequeñas' }
+    ],
+    recommendations: '⚠ REFERIR AL DERMATÓLOGO DE INMEDIATO. El tratamiento principal es la extirpación quirúrgica. Usar protector solar SPF 50+ diariamente.',
+    differential: [{ disease: 'Seborrheic Keratosis', probability: 0.15 }, { disease: 'Psoriasis', probability: 0.06 }]
+  },
+  'Sin patología identificable': {
+    severity: 'Normal',
+    summary: 'El modelo de inteligencia artificial no detectó ninguna patología cutánea con suficiente nivel de certeza en la imagen analizada. La piel parece saludable o la imagen puede no ser lo suficientemente clara para un análisis preciso.',
+    medications: [],
+    recommendations: 'No se requiere tratamiento en este momento. Si presenta síntomas como picazón, enrojecimiento o cambios en la piel, consulte a un médico. Para un diagnóstico definitivo, consulte siempre a un dermatólogo.',
+    differential: []
+  }
+};
+
+// ─── AUTH ─────────────────────────────────────────────────────────
+let currentUser = null;
+let diagnoses = [];
+let selectedId = null;
+let currentImageUrl = null;
+
+function switchTab(tab) {
+  document.getElementById('formLogin').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('formRegister').style.display = tab === 'register' ? '' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+  });
+  hideAuthMsg();
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = '';
+  document.getElementById('authSuccess').style.display = 'none';
+}
+
+function showAuthSuccess(msg) {
+  const el = document.getElementById('authSuccess');
+  el.textContent = msg;
+  el.style.display = '';
+  document.getElementById('authError').style.display = 'none';
+}
+
+function hideAuthMsg() {
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authSuccess').style.display = 'none';
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  if (!email || !pass) { showAuthError('Por favor completa el correo y la contraseña.'); return; }
+  if (!email.includes('@')) { showAuthError('Ingresa un correo electrónico válido.'); return; }
+
+  const btn = document.getElementById('btnLogin');
+  btn.disabled = true; btn.textContent = 'Ingresando...';
+
+  const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Iniciar sesión';
+
+  if (error) {
+    const msg = error.message;
+    if (msg.includes('Invalid login credentials') || msg.includes('invalid_credentials')) {
+      showAuthError('Correo o contraseña incorrectos. Verifica tus datos.');
+    } else if (msg.includes('Email not confirmed')) {
+      showAuthError('Debes confirmar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.');
+    } else if (msg.includes('Too many requests')) {
+      showAuthError('Demasiados intentos. Espera unos minutos e intenta de nuevo.');
+    } else {
+      showAuthError('Error al iniciar sesión: ' + msg);
+    }
+    return;
+  }
+  enterApp(data.user);
+}
+
+async function doRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPassword').value;
+  if (!name || !email || !pass) { showAuthError('Completa todos los campos.'); return; }
+  if (pass.length < 6) { showAuthError('La contraseña debe tener al menos 6 caracteres.'); return; }
+
+  const btn = document.getElementById('btnRegister');
+  btn.disabled = true; btn.textContent = 'Creando cuenta...';
+
+  const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
+  btn.disabled = false; btn.textContent = 'Crear cuenta';
+
+  if (error) {
+    const msg = error.message;
+    if (msg.includes('already registered') || msg.includes('User already registered')) {
+      showAuthError('Este correo ya está registrado. Intenta iniciar sesión.');
+    } else if (msg.includes('weak_password') || msg.includes('Password should be')) {
+      showAuthError('La contraseña es muy débil. Usa al menos 6 caracteres con letras y números.');
+    } else if (msg.includes('invalid email') || msg.includes('valid email')) {
+      showAuthError('El formato del correo no es válido.');
+    } else {
+      showAuthError('Error al crear cuenta: ' + msg);
+    }
+    return;
+  }
+
+  if (data.user && data.user.identities && data.user.identities.length === 0) {
+    showAuthError('Este correo ya está registrado. Inicia sesión.');
+    return;
+  }
+
+  // Si el usuario ya está confirmado (email confirm desactivado), entrar directo
+  if (data.user && data.session) {
+    showAuthSuccess('¡Cuenta creada exitosamente! Ingresando...');
+    setTimeout(() => enterApp(data.user), 1000);
+  } else {
+    showAuthSuccess('¡Cuenta creada! Revisa tu correo para confirmar tu cuenta y luego inicia sesión.');
+  }
+}
+
+async function doGoogleLogin() {
+  const { error } = await db.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + window.location.pathname }
+  });
+  if (error) showAuthError('Error Google: ' + error.message);
+}
+
+async function doLogout() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  await db.auth.signOut();
+  currentUser = null;
+  currentImageUrl = null;
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'grid';
+}
+
+function enterApp(user) {
+  currentUser = user;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  document.title = 'DET-Cut IA · Panel de Diagnóstico';
+
+  const email = user.email || '';
+  const name = user.user_metadata?.full_name || email.split('@')[0];
+  document.getElementById('userEmail').textContent = name;
+  document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+
+  loadDiagnoses();
+  iniciarRevisionDeCapturas();
+}
+
+// ─── REVISIÓN AUTOMÁTICA DE CAPTURAS DEL ESP32-CAM ─────────────────
+// Cada pocos segundos, pregunta a Supabase si llegó una foto nueva
+// desde el prototipo físico. Si llegó (y es distinta a la última que
+// ya se mostró), la coloca en la zona de carga — igual que si el
+// doctor la hubiera subido a mano — pero SIN analizarla sola. El
+// doctor sigue siendo quien decide darle a "Analizar imagen".
+let ultimaImagenVista = null;
+let intervaloRevision = null;
+
+function iniciarRevisionDeCapturas() {
+  if (intervaloRevision) return; // no duplicar el intervalo
+  revisarCapturaPendiente(); // primera revisión inmediata
+  intervaloRevision = setInterval(revisarCapturaPendiente, 4000); // cada 4 segundos
+}
+
+async function revisarCapturaPendiente() {
+  if (!db) return;
+  // No interrumpir si el doctor ya está viendo/editando una imagen
+  // que él mismo subió a mano.
+  if (currentImageUrl) return;
+
+  try {
+    const { data, error } = await db
+      .from('pending_capture')
+      .select('image_url')
+      .eq('id', 1)
+      .single();
+
+    if (error) {
+      console.error('Error revisando captura pendiente:', error);
+      return;
+    }
+
+    const imagenNueva = data?.image_url;
+    if (!imagenNueva) return;
+    if (imagenNueva === ultimaImagenVista) return; // ya la mostramos antes
+
+    ultimaImagenVista = imagenNueva;
+    currentImageUrl = imagenNueva;
+
+    const zone = document.getElementById('uploadZone');
+    zone.innerHTML = `<input type="file" id="fileInput" accept="image/*" style="display:none;"><img src="${imagenNueva}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;">`;
+    attachFileListener();
+    const removeBtn = document.getElementById('removeImageBtn');
+    if (removeBtn) removeBtn.style.display = 'flex';
+
+    showToast('📸 Nueva captura del escáner — lista para analizar', false);
+  } catch (e) {
+    console.error('Error revisando captura pendiente:', e);
+  }
+}
+
+// Verificar sesión al cargar
+window.addEventListener('load', async () => {
+  try {
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } catch(e) {
+    console.error('Supabase no cargó:', e);
+    return;
+  }
+
+  // Configurar zona de carga de imagen SIEMPRE, sin importar el estado de sesión
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragging'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragging'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragging');
+    const f = e.dataTransfer.files?.[0];
+    if (f) loadImage(f);
+  });
+  attachFileListener();
+
+  // Manejar el hash de OAuth redirect (Google regresa con #access_token=...)
+  if (window.location.hash && window.location.hash.includes('access_token')) {
+    let entered = false;
+    db.auth.onAuthStateChange((event, session) => {
+      if (session && !entered) {
+        entered = true;
+        history.replaceState(null, '', window.location.pathname);
+        enterApp(session.user);
+      }
+    });
+    // Fallback: intentar getSession después de 1 segundo
+    setTimeout(async () => {
+      if (!entered) {
+        const { data } = await db.auth.getSession();
+        if (data.session) {
+          entered = true;
+          history.replaceState(null, '', window.location.pathname);
+          enterApp(data.session.user);
+        }
+      }
+    }, 1000);
+    return;
+  }
+
+  // Verificar sesión existente
+  const { data } = await db.auth.getSession();
+  if (data.session) {
+    enterApp(data.session.user);
+    return;
+  }
+
+  db.auth.onAuthStateChange((event, session) => {
+    if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) enterApp(session.user);
+  });
+});
+
+function attachFileListener() {
+  const fi = document.getElementById('fileInput');
+  if (fi) fi.addEventListener('change', e => { const f = e.target.files?.[0]; if (f) loadImage(f); });
+}
+
+function loadImage(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    currentImageUrl = reader.result;
+    const zone = document.getElementById('uploadZone');
+    zone.innerHTML = `<input type="file" id="fileInput" accept="image/*" style="display:none;"><img src="${currentImageUrl}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;">`;
+    attachFileListener();
+    const removeBtn = document.getElementById('removeImageBtn');
+    if (removeBtn) removeBtn.style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeSelectedImage(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  currentImageUrl = null;
+  const zone = document.getElementById('uploadZone');
+  zone.innerHTML = `<input type="file" id="fileInput" accept="image/*" style="display:none;"><div class="upload-icon">⬆</div><p>Arrastra o haz clic aquí</p><span>JPG, PNG · desde cámara o prototipo</span>`;
+  attachFileListener();
+  const removeBtn = document.getElementById('removeImageBtn');
+  if (removeBtn) removeBtn.style.display = 'none';
+}
+
+// ─── ANÁLISIS ─────────────────────────────────────────────────────
+async function runAnalysis() {
+  if (!currentImageUrl) { alert('Selecciona una imagen primero.'); return; }
+
+  const spinner = document.getElementById('spinner');
+  const btn = document.getElementById('analyzeBtn');
+  spinner.classList.add('active'); btn.style.display = 'none';
+
+  try {
+    const res = await fetch(BACKEND_URL + '/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+      body: JSON.stringify({
+        image: currentImageUrl,
+        patient_ref: document.getElementById('patientRef').value.trim() || null
+      })
+    });
+
+    if (!res.ok) throw new Error('El servidor respondió con error ' + res.status);
+    const result = await res.json();
+    if (result.error) throw new Error(result.error);
+
+    const disease = result.disease;
+    const probability = result.probability;
+
+    // El backend en Render ya guardó este diagnóstico en Supabase
+    // dentro de /predict (para que también funcione cuando la foto
+    // viene del ESP32-CAM, que nunca pasa por este HTML). Por eso
+    // aquí SOLO leemos el resultado para mostrarlo — ya no lo
+    // volvemos a insertar, para no duplicar la fila en la base de datos.
+    const data = DISEASE_DATA[disease] || DISEASE_DATA['Sin patología identificable'];
+
+    spinner.classList.remove('active'); btn.style.display = '';
+
+    showToast('Diagnóstico recibido ✓', false);
+    document.getElementById('patientRef').value = '';
+    const zone = document.getElementById('uploadZone');
+    zone.innerHTML = `<input type="file" id="fileInput" accept="image/*" style="display:none;"><div class="upload-icon">⬆</div><p>Arrastra o haz clic aquí</p><span>JPG, PNG · desde cámara o prototipo</span>`;
+    attachFileListener();
+    currentImageUrl = null;
+    const removeBtnAfter = document.getElementById('removeImageBtn');
+    if (removeBtnAfter) removeBtnAfter.style.display = 'none';
+
+    await loadDiagnoses();
+    // 'diagnoses' quedó recargada y ordenada del más reciente al más
+    // viejo — el [0] es justo el que el backend acaba de guardar.
+    if (diagnoses.length > 0) showDiagnosis(diagnoses[0]);
+
+  } catch(err) {
+    spinner.classList.remove('active'); btn.style.display = '';
+    showToast('No se pudo conectar con el servidor de IA. (' + err.message + ')', true);
+  }
+}
+
+// ─── DIAGNÓSTICOS ────────────────────────────────────────────────
+async function loadDiagnoses() {
+  const list = document.getElementById('recentList');
+  if (!db) { list.innerHTML = '<div class="empty-list">Sin conexión.</div>'; return; }
+
+  const { data, error } = await db.from('diagnoses').select('*').order('created_at', { ascending: false }).limit(50);
+
+  if (error) { setStatus('Error de conexión', false); return; }
+  setStatus('Sistema activo · Supabase', true);
+  diagnoses = data || [];
+  renderRecentList();
+}
+
+function showDiagnosis(diag) {
+  selectedId = diag.id;
+  document.getElementById('emptyReport').style.display = 'none';
+  document.getElementById('reportCard').style.display = '';
+  document.getElementById('receiptCard').style.display = '';
+
+  const pct = Math.round(diag.probability * 100);
+  const date = new Date(diag.created_at);
+
+  document.getElementById('rDisease').textContent = diag.disease;
+
+  const badge = document.getElementById('rSeverityBadge');
+  badge.textContent = diag.severity ?? '—';
+  badge.className = 'badge ' + (
+    diag.severity === 'Severa' ? 'badge-severa' :
+    diag.severity === 'Moderada' ? 'badge-moderada' :
+    diag.severity === 'Normal' ? 'badge-normal' : 'badge-leve'
+  );
+
+  document.getElementById('rMeta').textContent = `Ref. ${diag.patient_ref ?? 'N/A'} · ${date.toLocaleString('es')}`;
+
+  document.getElementById('rImageBox').innerHTML = diag.image_url
+    ? `<img src="${diag.image_url}" alt="Lesión">` : '🖼';
+
+  document.getElementById('rPct').textContent = pct + '%';
+  setTimeout(() => { document.getElementById('rBar').style.width = pct + '%'; }, 100);
+  document.getElementById('rSummary').textContent = diag.summary ?? '—';
+
+  const medsEl = document.getElementById('rMeds');
+  medsEl.innerHTML = diag.medications && diag.medications.length > 0
+    ? diag.medications.map(m => `<div class="med-item"><div class="med-header"><span class="med-name">${m.name}</span><span class="med-dose">${m.dosage}</span></div><div class="med-purpose">${m.purpose}</div></div>`).join('')
+    : '<p style="color:var(--muted);font-size:13px;">Sin medicamentos sugeridos.</p>';
+
+  document.getElementById('rRecs').textContent = diag.recommendations ?? '—';
+
+  const diffEl = document.getElementById('rDiff');
+  diffEl.innerHTML = diag.differential && diag.differential.length > 0
+    ? diag.differential.map(d => `<div class="diff-item"><span class="diff-name">${d.disease}</span><div class="diff-bar-wrap"><div class="diff-bar-fill" style="width:${Math.round(d.probability*100)}%"></div></div><span class="diff-pct">${Math.round(d.probability*100)}%</span></div>`).join('')
+    : '<p style="color:var(--muted);font-size:13px;">—</p>';
+
+  renderReceipt(diag);
+  renderRecentList();
+}
+
+function renderRecentList() {
+  const list = document.getElementById('recentList');
+  document.getElementById('recentCount').textContent = diagnoses.length;
+
+  if (diagnoses.length === 0) {
+    list.innerHTML = '<div class="empty-list">Aún no hay diagnósticos.<br>Sube una imagen para comenzar.</div>';
+    return;
+  }
+
+  list.innerHTML = diagnoses.map(d => {
+    const pct = Math.round(d.probability * 100);
+    const active = d.id === selectedId ? 'active' : '';
+    const time = new Date(d.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+    return `<div class="recent-item ${active}" onclick='showDiagnosis(${JSON.stringify(d).replace(/'/g, "&#39;")})'>
+      <div class="recent-thumb">${d.image_url ? `<img src="${d.image_url}" alt="">` : '🔬'}</div>
+      <div class="recent-info"><div class="recent-disease">${d.disease}</div><div class="recent-meta">${pct}% · ${d.patient_ref ?? 'Sin ref.'}</div></div>
+      <div class="recent-time">${time}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderReceipt(d) {
+  const pct = Math.round(d.probability * 100);
+  const date = new Date(d.created_at);
+  const meds = d.medications && d.medications.length > 0
+    ? d.medications.map((m, i) => `<div><strong>${i+1}. ${m.name}</strong></div><div>&nbsp;&nbsp;Dosis: ${m.dosage}</div><div>&nbsp;&nbsp;${m.purpose}</div>`).join('')
+    : '<div>Ninguno.</div>';
+
+  const diff = d.differential && d.differential.length > 0
+    ? `<div class="r-line"></div><div class="r-bold">DIAG. DIFERENCIAL</div>${d.differential.map(df => `<div class="r-row"><span>${df.disease}</span><span>${Math.round(df.probability*100)}%</span></div>`).join('')}`
+    : '';
+
+  document.getElementById('receiptContent').innerHTML = `
+    <div class="r-center r-bold" style="font-size:13px;letter-spacing:2px;">DET-Cut IA</div>
+    <div class="r-center" style="font-size:9px;">Diagnostico Dermatologico</div>
+    <div class="r-dline"></div>
+    <div>FECHA : ${date.toLocaleDateString('es')}</div>
+    <div>HORA  : ${date.toLocaleTimeString('es')}</div>
+    <div>REF.  : ${d.patient_ref ?? 'N/A'}</div>
+    <div>ID    : ${String(d.id).slice(0,8).toUpperCase()}</div>
+    <div class="r-dline"></div>
+    ${d.image_url ? `<img src="${d.image_url}" class="receipt-img" alt="">` : ''}
+    <div class="r-line"></div>
+    <div class="r-center r-bold" style="font-size:12px;">${d.disease.toUpperCase()}</div>
+    <div class="r-center">Confianza: ${pct}% · ${d.severity ?? '-'}</div>
+    <div class="r-line"></div>
+    <div class="r-bold">RESUMEN CLINICO</div>
+    <div style="font-size:9.5px;text-align:justify;">${d.summary ?? '-'}</div>
+    <div class="r-line"></div>
+    <div class="r-bold">MEDICAMENTOS</div>${meds}
+    <div class="r-line"></div>
+    <div class="r-bold">RECOMENDACIONES</div>
+    <div style="font-size:9.5px;text-align:justify;">${d.recommendations ?? '-'}</div>
+    ${diff}
+    <div class="r-dline"></div>
+    <div class="r-center" style="font-size:8.5px;">Reporte generado por IA como APOYO<br>al diagnostico clinico.</div>
+    <div class="r-dline"></div>
+    <div class="r-center">*** GRACIAS ***</div>
+    <div class="r-center" style="font-size:8px;">det-cut-ia</div>
+  `;
+}
+
+async function clearHistory() {
+  if (diagnoses.length === 0) { showToast('No hay diagnósticos que borrar.', false); return; }
+  if (!confirm(`¿Seguro que quieres borrar los ${diagnoses.length} diagnósticos? Esta acción no se puede deshacer.`)) return;
+
+  const { error } = await db.from('diagnoses').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  if (error) { showToast('Error: ' + error.message, true); return; }
+
+  showToast('Historial borrado ✓', false);
+  selectedId = null;
+  document.getElementById('emptyReport').style.display = '';
+  document.getElementById('reportCard').style.display = 'none';
+  document.getElementById('receiptCard').style.display = 'none';
+  await loadDiagnoses();
+}
+
+async function exportMonth() {
+  const ahora = new Date();
+  const inicio = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString();
+  const fin = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 1).toISOString();
+
+  const { data, error } = await db.from('diagnoses').select('*').gte('created_at', inicio).lt('created_at', fin).order('created_at', { ascending: true });
+  if (error) { showToast('Error: ' + error.message, true); return; }
+  if (!data || data.length === 0) { showToast('No hay diagnósticos este mes.', false); return; }
+
+  const headers = ['Fecha', 'Hora', 'Referencia', 'Enfermedad', 'Confianza %', 'Severidad', 'Resumen'];
+  const rows = data.map(d => {
+    const fecha = new Date(d.created_at);
+    return [fecha.toLocaleDateString('es'), fecha.toLocaleTimeString('es'), d.patient_ref ?? 'N/A', d.disease, Math.round(d.probability * 100) + '%', d.severity ?? '', d.summary ?? '']
+      .map(c => `"${String(c).replace(/"/g, '""')}"`).join(',');
+  });
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const mes = ahora.toLocaleDateString('es', { month: 'long', year: 'numeric' });
+  const a = document.createElement('a');
+  a.href = url; a.download = `diagnosticos_${mes.replace(' ', '_')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast(`Exportados ${data.length} diagnósticos ✓`, false);
+}
+
+// ─── ENVIAR DIAGNÓSTICO POR CORREO ─────────────────────────────────
+// Llama al backend de Render, que a su vez llama a Resend con la
+// API key guardada como variable de entorno en el servidor (nunca
+// aquí en el HTML).
+async function enviarPorCorreo() {
+  const diag = diagnoses.find(d => d.id === selectedId);
+  if (!diag) { showToast('No hay un diagnóstico seleccionado.', true); return; }
+
+  let email = document.getElementById('patientEmail').value.trim();
+  if (!email) {
+    email = prompt('Correo del paciente para enviar el diagnóstico:', '');
+    if (!email) return;
+  }
+
+  showToast('Enviando correo…', false);
+
+  try {
+    const res = await fetch(BACKEND_URL + '/send-diagnosis-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+      body: JSON.stringify({ email, diagnosis: diag })
+    });
+    const result = await res.json();
+    if (!res.ok || result.error) throw new Error(result.error || ('Error ' + res.status));
+    showToast('Correo enviado a ' + email + ' ✓', false);
+  } catch (err) {
+    showToast('No se pudo enviar el correo. (' + err.message + ')', true);
+  }
+}
+
+// ─── ABRIR / DESCARGAR DOCTORSV ─────────────────────────────────────
+// Android: intenta abrir la app instalada (por su package real);
+// si no está instalada, Chrome cae automáticamente a la Play Store.
+// iOS: no hay forma de detectar desde la web si la app ya está
+// instalada (eso requeriría que DoctorSV configure "universal links"
+// de su lado), así que lleva directo al App Store.
+// Escritorio / otros: abre la Play Store en una pestaña nueva.
+function abrirDoctorSV() {
+  const ANDROID_PACKAGE = 'com.tcass.goes.doctorsv';
+  const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=' + ANDROID_PACKAGE;
+  const APP_STORE_URL = 'https://apps.apple.com/sv/app/doctorsv/id6754052239';
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+  if (/android/i.test(ua)) {
+    const fallback = encodeURIComponent(PLAY_STORE_URL);
+    window.location.href = 'intent://#Intent;package=' + ANDROID_PACKAGE + ';scheme=https;S.browser_fallback_url=' + fallback + ';end';
+  } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+    window.location.href = APP_STORE_URL;
+  } else {
+    window.open(PLAY_STORE_URL, '_blank');
+  }
+}
+
+function setStatus(text, ok) {
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusDot').style.background = ok ? 'var(--primary)' : 'var(--danger)';
+}
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => { t.className = 'toast'; }, 3500);
+}
+</script>
+</body>
+</html>
