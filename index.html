@@ -510,6 +510,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
   .report-body { grid-template-columns: 200px 1fr; }
   .summary-text, .recs-text, .med-purpose, .diff-name { color: #333; }
 }
+
 </style>
 </head>
 <body>
@@ -941,7 +942,7 @@ async function doRegister() {
 async function doGoogleLogin() {
   const { error } = await db.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: 'http://127.0.0.1:5500/DETCutIA_Sistema_Login.html' }
+    options: { redirectTo: window.location.origin + window.location.pathname }
   });
   if (error) showAuthError('Error Google: ' + error.message);
 }
