@@ -1036,8 +1036,12 @@ async function doLogin() {
       showAuthError('Correo o contraseña incorrectos. Verifica tus datos.');
     } else if (msg.includes('Email not confirmed')) {
       showAuthError('Debes confirmar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.');
-    } else if (msg.includes('Too many requests')) {
+    } else if (msg.includes('Too many requests') || msg.includes('rate limit')) {
       showAuthError('Demasiados intentos. Espera unos minutos e intenta de nuevo.');
+    } else if (msg.includes('User not found')) {
+      showAuthError('No existe una cuenta con ese correo. Regístrate primero.');
+    } else if (msg.toLowerCase().includes('network')) {
+      showAuthError('No se pudo conectar. Revisa tu conexión a internet.');
     } else {
       showAuthError('Error al iniciar sesión: ' + msg);
     }
@@ -1059,6 +1063,7 @@ async function doRegister() {
   const email = document.getElementById('regEmail').value.trim();
   const pass = document.getElementById('regPassword').value;
   if (!name || !email || !pass) { showAuthError('Completa todos los campos.'); return; }
+  if (!email.includes('@') || !email.includes('.')) { showAuthError('Ingresa un correo electrónico válido.'); return; }
   if (pass.length < 6) { showAuthError('La contraseña debe tener al menos 6 caracteres.'); return; }
 
   const btn = document.getElementById('btnRegister');
@@ -1073,8 +1078,12 @@ async function doRegister() {
       showAuthError('Este correo ya está registrado. Intenta iniciar sesión.');
     } else if (msg.includes('weak_password') || msg.includes('Password should be')) {
       showAuthError('La contraseña es muy débil. Usa al menos 6 caracteres con letras y números.');
-    } else if (msg.includes('invalid email') || msg.includes('valid email')) {
+    } else if (msg.includes('invalid email') || msg.includes('valid email') || msg.includes('Unable to validate email')) {
       showAuthError('El formato del correo no es válido.');
+    } else if (msg.includes('Too many requests') || msg.includes('rate limit')) {
+      showAuthError('Demasiados intentos. Espera unos minutos e intenta de nuevo.');
+    } else if (msg.includes('Signup') && msg.includes('disabled')) {
+      showAuthError('El registro está deshabilitado por ahora. Contacta al administrador.');
     } else {
       showAuthError('Error al crear cuenta: ' + msg);
     }
@@ -1086,13 +1095,21 @@ async function doRegister() {
     return;
   }
 
-  // Si el usuario ya está confirmado (email confirm desactivado), entrar directo
-  if (data.user && data.session) {
-    showAuthSuccess('¡Cuenta creada exitosamente! Ingresando...');
-    setTimeout(() => enterApp(data.user), 1000);
+  // El registro NUNCA debe entrar directo al sistema. Si Supabase ya
+  // generó una sesión (porque la confirmación de correo está
+  // desactivada), la cerramos aquí para forzar que el médico inicie
+  // sesión el mismo, como cualquier otro usuario.
+  if (data.session) {
+    await db.auth.signOut();
+    showAuthSuccess('¡Cuenta creada! Ahora inicia sesión con tu correo y contraseña.');
   } else {
     showAuthSuccess('¡Cuenta creada! Revisa tu correo para confirmar tu cuenta y luego inicia sesión.');
   }
+
+  document.getElementById('regName').value = '';
+  document.getElementById('regEmail').value = '';
+  document.getElementById('regPassword').value = '';
+  setTimeout(() => switchTab('login'), 1800);
 }
 
 async function doGoogleLogin() {
