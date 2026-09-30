@@ -854,12 +854,12 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
           </div>
           <div class="report-content-col">
             <div><div class="section-title">Resumen Clínico</div><p class="summary-text" id="rSummary">—</p></div>
-            <div><div class="section-title">Recomendaciones</div><p class="recs-text" id="rRecs">—</p></div>
+            <div><div class="section-title">Próximos Pasos Sugeridos</div><p class="recs-text" id="rRecs">—</p></div>
             
             <div><div class="section-title">Diagnóstico Diferencial</div><div class="diff-list" id="rDiff">—</div></div>
             <div class="disclaimer">
               <span class="disclaimer-icon">ℹ</span>
-              <span>Este reporte es generado por IA y sirve como <strong>apoyo</strong> al diagnóstico clínico. La decisión final corresponde al profesional médico tratante.</span>
+              <span>Este reporte fue generado automáticamente por un sistema de apoyo al diagnóstico con Inteligencia Artificial y <strong>no ha sido revisado por un profesional</strong>. No constituye un diagnóstico médico ni debe usarse como única base para decisiones de salud. La decisión final corresponde exclusivamente al profesional médico tratante.</span>
             </div>
           </div>
         </div>
@@ -1407,7 +1407,7 @@ function renderReceipt(d) {
     <div class="r-bold">RESUMEN CLINICO</div>
     <div style="font-size:9.5px;text-align:justify;">${d.summary ?? '-'}</div>
     <div class="r-line"></div>
-    <div class="r-bold">RECOMENDACIONES</div>
+    <div class="r-bold">PROXIMOS PASOS SUGERIDOS</div>
     <div style="font-size:9.5px;text-align:justify;">${d.recommendations ?? '-'}</div>
     ${diff}
     <div class="r-dline"></div>
@@ -1458,7 +1458,7 @@ async function exportMonth() {
   if (error) { showToast('Error: ' + error.message, true); return; }
   if (!data || data.length === 0) { showToast('No hay diagnósticos este mes.', false); return; }
 
-  const headers = ['ID', 'Fecha', 'Hora', 'Referencia Paciente', 'Diagnostico', 'Confianza (%)', 'Severidad', 'Resumen Clinico', 'Recomendaciones'];
+  const headers = ['ID', 'Fecha', 'Hora', 'Referencia Paciente', 'Diagnostico', 'Confianza (%)', 'Severidad', 'Resumen Clinico', 'Proximos Pasos Sugeridos'];
   const rows = data.map(d => {
     const fecha = new Date(d.created_at);
     return [
