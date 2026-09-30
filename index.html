@@ -994,14 +994,14 @@ function switchTab(tab) {
 function showAuthError(msg) {
   const el = document.getElementById('authError');
   el.textContent = msg;
-  el.style.display = '';
+  el.style.display = 'block';
   document.getElementById('authSuccess').style.display = 'none';
 }
 
 function showAuthSuccess(msg) {
   const el = document.getElementById('authSuccess');
   el.textContent = msg;
-  el.style.display = '';
+  el.style.display = 'block';
   document.getElementById('authError').style.display = 'none';
 }
 
