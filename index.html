@@ -854,7 +854,6 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
           </div>
           <div class="report-content-col">
             <div><div class="section-title">Resumen Clínico</div><p class="summary-text" id="rSummary">—</p></div>
-            <div><div class="section-title">Medicamentos Sugeridos</div><div class="med-list" id="rMeds">—</div></div>
             <div><div class="section-title">Recomendaciones</div><p class="recs-text" id="rRecs">—</p></div>
             
             <div><div class="section-title">Diagnóstico Diferencial</div><div class="diff-list" id="rDiff">—</div></div>
@@ -907,63 +906,42 @@ const DISEASE_DATA = {
   'Psoriasis': {
     severity: 'Moderada',
     summary: 'La psoriasis es una enfermedad crónica de la piel que provoca la acumulación rápida de células cutáneas, formando escamas y manchas rojas que pueden picar o doler. Es una condición autoinmune y no es contagiosa.',
-    medications: [
-      { name: 'Betametasona crema 0.1%', dosage: '2 veces/día', purpose: 'Reduce la inflamación y el enrojecimiento local' },
-      { name: 'Calcipotriol pomada', dosage: '1-2 veces/día', purpose: 'Regula el crecimiento de las células de la piel' },
-      { name: 'Metotrexato 7.5mg', dosage: 'Semanal', purpose: 'Medicamento sistémico para casos moderados-severos' }
-    ],
+    medications: [],
     recommendations: 'Mantener la piel hidratada con emolientes sin fragancia. Evitar el estrés y los traumatismos en la piel. No rascar las lesiones. Consultar al dermatólogo para tratamiento sistémico si las lesiones son extensas.',
     differential: [{ disease: 'Dermatitis Atópica', probability: 0.12 }, { disease: 'Eczema', probability: 0.08 }]
   },
   'Eczema': {
     severity: 'Leve',
     summary: 'El eczema es una condición que hace que la piel se inflame y se ponga rojiza, generalmente como respuesta a desencadenantes ambientales o alérgicos. Se caracteriza por picor intenso, sequedad y formación de costras.',
-    medications: [
-      { name: 'Hidrocortisona crema 1%', dosage: '2-3 veces/día', purpose: 'Alivia la inflamación y el picor' },
-      { name: 'Tacrolimus ungüento 0.1%', dosage: '2 veces/día', purpose: 'Inmunomodulador tópico para zonas sensibles' },
-      { name: 'Loratadina 10mg', dosage: '1 vez/día', purpose: 'Antihistamínico para reducir el picor' }
-    ],
+    medications: [],
     recommendations: 'Bañarse con agua tibia y duración corta. Aplicar crema hidratante inmediatamente después del baño. Usar jabones sin fragancia. Evitar telas sintéticas.',
     differential: [{ disease: 'Psoriasis', probability: 0.15 }, { disease: 'Dermatitis Atópica', probability: 0.20 }]
   },
   'Dermatitis Atopica': {
     severity: 'Moderada',
     summary: 'La dermatitis atópica es una enfermedad inflamatoria crónica de la piel que suele comenzar en la infancia. Se caracteriza por piel seca, picor intenso y lesiones eccematosas. Tiene una base genética importante.',
-    medications: [
-      { name: 'Dupilumab 300mg', dosage: 'Cada 2 semanas (inyección)', purpose: 'Biológico de primera línea para DA moderada-severa' },
-      { name: 'Mometasona furoato 0.1%', dosage: '1 vez/día', purpose: 'Corticosteroide tópico de potencia media' },
-      { name: 'Cetirizina 10mg', dosage: 'Noche', purpose: 'Antihistamínico para el picor nocturno' }
-    ],
+    medications: [],
     recommendations: 'Rutina diaria de hidratación con emolientes ricos. Usar ropa suave de algodón. Mantener temperatura ambiental fresca. Control periódico con dermatólogo.',
     differential: [{ disease: 'Eczema', probability: 0.25 }, { disease: 'Psoriasis', probability: 0.10 }]
   },
   'Seborrheic Keratosis': {
     severity: 'Leve',
     summary: 'La queratosis seborreica es un crecimiento cutáneo benigno no canceroso muy común. Se caracteriza por lesiones de color marrón o negro con superficie verrugosa. No requieren tratamiento a menos que sean molestas.',
-    medications: [
-      { name: 'Ácido tricloroacético 35%', dosage: 'Aplicación clínica única', purpose: 'Cauterización química de la lesión' },
-      { name: 'Peróxido de hidrógeno 40%', dosage: 'Aplicación clínica', purpose: 'Tratamiento aprobado para queratosis seborreica' }
-    ],
+    medications: [],
     recommendations: 'No es necesario tratamiento si no molesta. Evitar rascarse. Consultar si la lesión cambia de tamaño, forma o color.',
     differential: [{ disease: 'Basal Cell Carcinoma', probability: 0.08 }, { disease: 'Warts Molluscum', probability: 0.12 }]
   },
   'Warts Molluscum': {
     severity: 'Leve',
     summary: 'El molluscum contagioso es una infección viral causada por el virus Molluscum contagiosum. Se manifiesta como pequeñas protuberancias redondas con una depresión central. Es altamente contagioso por contacto directo.',
-    medications: [
-      { name: 'Imiquimod crema 5%', dosage: '3 veces por semana', purpose: 'Estimula el sistema inmune para eliminar el virus' },
-      { name: 'Ácido salicílico 17%', dosage: '1 vez/día', purpose: 'Destruye el tejido infectado localmente' }
-    ],
+    medications: [],
     recommendations: 'Evitar tocar o rascar las lesiones. No compartir toallas ni artículos personales. Las lesiones suelen desaparecer solas en 6-12 meses.',
     differential: [{ disease: 'Seborrheic Keratosis', probability: 0.10 }, { disease: 'Eczema', probability: 0.07 }]
   },
   'Basal Cell Carcinoma': {
     severity: 'Severa',
     summary: 'El carcinoma basocelular es el tipo más común de cáncer de piel. Raramente se propaga a otros órganos pero REQUIERE ATENCIÓN MÉDICA URGENTE. La exposición prolongada al sol es el principal factor de riesgo.',
-    medications: [
-      { name: 'Vismodegib 150mg', dosage: '1 vez/día (oral)', purpose: 'Inhibidor de la vía Hedgehog para casos avanzados' },
-      { name: 'Imiquimod crema 5%', dosage: '5 veces/semana x 6 semanas', purpose: 'Para lesiones superficiales pequeñas' }
-    ],
+    medications: [],
     recommendations: '⚠ REFERIR AL DERMATÓLOGO DE INMEDIATO. El tratamiento principal es la extirpación quirúrgica. Usar protector solar SPF 50+ diariamente.',
     differential: [{ disease: 'Seborrheic Keratosis', probability: 0.15 }, { disease: 'Psoriasis', probability: 0.06 }]
   },
@@ -994,14 +972,14 @@ function switchTab(tab) {
 function showAuthError(msg) {
   const el = document.getElementById('authError');
   el.textContent = msg;
-  el.style.display = 'block';
+  el.style.display = '';
   document.getElementById('authSuccess').style.display = 'none';
 }
 
 function showAuthSuccess(msg) {
   const el = document.getElementById('authSuccess');
   el.textContent = msg;
-  el.style.display = 'block';
+  el.style.display = '';
   document.getElementById('authError').style.display = 'none';
 }
 
@@ -1036,12 +1014,8 @@ async function doLogin() {
       showAuthError('Correo o contraseña incorrectos. Verifica tus datos.');
     } else if (msg.includes('Email not confirmed')) {
       showAuthError('Debes confirmar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.');
-    } else if (msg.includes('Too many requests') || msg.includes('rate limit')) {
+    } else if (msg.includes('Too many requests')) {
       showAuthError('Demasiados intentos. Espera unos minutos e intenta de nuevo.');
-    } else if (msg.includes('User not found')) {
-      showAuthError('No existe una cuenta con ese correo. Regístrate primero.');
-    } else if (msg.toLowerCase().includes('network')) {
-      showAuthError('No se pudo conectar. Revisa tu conexión a internet.');
     } else {
       showAuthError('Error al iniciar sesión: ' + msg);
     }
@@ -1063,7 +1037,6 @@ async function doRegister() {
   const email = document.getElementById('regEmail').value.trim();
   const pass = document.getElementById('regPassword').value;
   if (!name || !email || !pass) { showAuthError('Completa todos los campos.'); return; }
-  if (!email.includes('@') || !email.includes('.')) { showAuthError('Ingresa un correo electrónico válido.'); return; }
   if (pass.length < 6) { showAuthError('La contraseña debe tener al menos 6 caracteres.'); return; }
 
   const btn = document.getElementById('btnRegister');
@@ -1078,12 +1051,8 @@ async function doRegister() {
       showAuthError('Este correo ya está registrado. Intenta iniciar sesión.');
     } else if (msg.includes('weak_password') || msg.includes('Password should be')) {
       showAuthError('La contraseña es muy débil. Usa al menos 6 caracteres con letras y números.');
-    } else if (msg.includes('invalid email') || msg.includes('valid email') || msg.includes('Unable to validate email')) {
+    } else if (msg.includes('invalid email') || msg.includes('valid email')) {
       showAuthError('El formato del correo no es válido.');
-    } else if (msg.includes('Too many requests') || msg.includes('rate limit')) {
-      showAuthError('Demasiados intentos. Espera unos minutos e intenta de nuevo.');
-    } else if (msg.includes('Signup') && msg.includes('disabled')) {
-      showAuthError('El registro está deshabilitado por ahora. Contacta al administrador.');
     } else {
       showAuthError('Error al crear cuenta: ' + msg);
     }
@@ -1095,21 +1064,13 @@ async function doRegister() {
     return;
   }
 
-  // El registro NUNCA debe entrar directo al sistema. Si Supabase ya
-  // generó una sesión (porque la confirmación de correo está
-  // desactivada), la cerramos aquí para forzar que el médico inicie
-  // sesión el mismo, como cualquier otro usuario.
-  if (data.session) {
-    await db.auth.signOut();
-    showAuthSuccess('¡Cuenta creada! Ahora inicia sesión con tu correo y contraseña.');
+  // Si el usuario ya está confirmado (email confirm desactivado), entrar directo
+  if (data.user && data.session) {
+    showAuthSuccess('¡Cuenta creada exitosamente! Ingresando...');
+    setTimeout(() => enterApp(data.user), 1000);
   } else {
     showAuthSuccess('¡Cuenta creada! Revisa tu correo para confirmar tu cuenta y luego inicia sesión.');
   }
-
-  document.getElementById('regName').value = '';
-  document.getElementById('regEmail').value = '';
-  document.getElementById('regPassword').value = '';
-  setTimeout(() => switchTab('login'), 1800);
 }
 
 async function doGoogleLogin() {
@@ -1389,11 +1350,6 @@ function showDiagnosis(diag) {
   setTimeout(() => { document.getElementById('rBar').style.width = pct + '%'; }, 100);
   document.getElementById('rSummary').textContent = diag.summary ?? '—';
 
-  const medsEl = document.getElementById('rMeds');
-  medsEl.innerHTML = diag.medications && diag.medications.length > 0
-    ? diag.medications.map(m => `<div class="med-item"><div class="med-header"><span class="med-name">${m.name}</span><span class="med-dose">${m.dosage}</span></div><div class="med-purpose">${m.purpose}</div></div>`).join('')
-    : '<p style="color:var(--muted);font-size:13px;">Sin medicamentos sugeridos.</p>';
-
   document.getElementById('rRecs').textContent = diag.recommendations ?? '—';
 
   const diffEl = document.getElementById('rDiff');
@@ -1429,9 +1385,6 @@ function renderRecentList() {
 function renderReceipt(d) {
   const pct = Math.round(d.probability * 100);
   const date = new Date(d.created_at);
-  const meds = d.medications && d.medications.length > 0
-    ? d.medications.map((m, i) => `<div><strong>${i+1}. ${m.name}</strong></div><div>&nbsp;&nbsp;Dosis: ${m.dosage}</div><div>&nbsp;&nbsp;${m.purpose}</div>`).join('')
-    : '<div>Ninguno.</div>';
 
   const diff = d.differential && d.differential.length > 0
     ? `<div class="r-line"></div><div class="r-bold">DIAG. DIFERENCIAL</div>${d.differential.map(df => `<div class="r-row"><span>${df.disease}</span><span>${Math.round(df.probability*100)}%</span></div>`).join('')}`
@@ -1453,8 +1406,6 @@ function renderReceipt(d) {
     <div class="r-line"></div>
     <div class="r-bold">RESUMEN CLINICO</div>
     <div style="font-size:9.5px;text-align:justify;">${d.summary ?? '-'}</div>
-    <div class="r-line"></div>
-    <div class="r-bold">MEDICAMENTOS</div>${meds}
     <div class="r-line"></div>
     <div class="r-bold">RECOMENDACIONES</div>
     <div style="font-size:9.5px;text-align:justify;">${d.recommendations ?? '-'}</div>
@@ -1507,10 +1458,9 @@ async function exportMonth() {
   if (error) { showToast('Error: ' + error.message, true); return; }
   if (!data || data.length === 0) { showToast('No hay diagnósticos este mes.', false); return; }
 
-  const headers = ['ID', 'Fecha', 'Hora', 'Referencia Paciente', 'Diagnostico', 'Confianza (%)', 'Severidad', 'Resumen Clinico', 'Recomendaciones', 'Medicamentos'];
+  const headers = ['ID', 'Fecha', 'Hora', 'Referencia Paciente', 'Diagnostico', 'Confianza (%)', 'Severidad', 'Resumen Clinico', 'Recomendaciones'];
   const rows = data.map(d => {
     const fecha = new Date(d.created_at);
-    const meds = Array.isArray(d.medications) ? d.medications.map(m => m.name).join(' | ') : '';
     return [
       d.id ?? '',
       fecha.toLocaleDateString('es-SV'),
@@ -1520,8 +1470,7 @@ async function exportMonth() {
       Math.round((d.probability ?? 0) * 100),
       d.severity ?? '',
       d.summary ?? '',
-      d.recommendations ?? '',
-      meds
+      d.recommendations ?? ''
     ].map(c => `"${String(c).replace(/"/g, '""')}"`).join(',');
   });
 
