@@ -772,46 +772,14 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
         <input type="text" id="patientRef" class="input-field" placeholder="Ref. paciente (ej. PAC-0421)">
         <input type="email" id="patientEmail" class="input-field" placeholder="Correo del paciente (opcional)">
         <div style="position:relative;">
-          <!-- Pestañas de captura -->
-          <div style="display:flex;gap:0;margin-bottom:0;border-radius:10px 10px 0 0;overflow:hidden;border:1.5px solid var(--border);border-bottom:none;">
-            <button type="button" id="tabArchivo" onclick="switchCaptura('archivo')"
-              style="flex:1;padding:9px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--primary);color:#fff;transition:all 0.2s;">
-              📁 Subir archivo
-            </button>
-            <button type="button" id="tabCamara" onclick="switchCaptura('camara')"
-              style="flex:1;padding:9px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--surface);color:var(--muted);border-left:1.5px solid var(--border);transition:all 0.2s;">
-              📷 Cámara externa
-            </button>
-          </div>
-
           <!-- Panel: Subir archivo -->
           <div id="panelArchivo">
-            <label class="upload-zone" id="uploadZone" for="fileInput" style="border-radius:0 0 10px 10px;border-top:none;">
+            <label class="upload-zone" id="uploadZone" for="fileInput" >
               <input type="file" id="fileInput" accept="image/*">
               <div class="upload-icon">⬆</div>
               <p>Arrastra o haz clic aquí</p>
               <span>JPG, PNG desde tu dispositivo</span>
             </label>
-          </div>
-
-          <!-- Panel: Cámara -->
-          <div id="panelCamara" style="display:none;">
-            <div style="border:1.5px solid var(--border);border-radius:0 0 10px 10px;border-top:none;overflow:hidden;background:var(--surface);">
-              <select id="camaraSelect" onchange="iniciarCamara(this.value)"
-                style="width:100%;padding:8px 10px;font-size:12px;border:none;border-bottom:1px solid var(--border);background:var(--surface);color:inherit;"></select>
-              <div style="background:#000;position:relative;min-height:180px;">
-                <video id="camaraVideo" autoplay playsinline muted style="width:100%;max-height:220px;display:block;object-fit:cover;"></video>
-                <canvas id="camaraCanvas" style="display:none;"></canvas>
-                <div id="camaraMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;color:#fff;font-size:12px;"></div>
-                <button type="button" onclick="tomarFoto()"
-                  style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#2f7de6;color:#fff;border:none;border-radius:20px;padding:8px 24px;font-size:13px;font-weight:600;cursor:pointer;">
-                  📸 Tomar foto
-                </button>
-              </div>
-              <div style="padding:8px 10px;font-size:11px;color:var(--muted);">
-                Conecta la cámara por USB (o una que tu equipo reconozca como webcam) y selecciónala arriba.
-              </div>
-            </div>
           </div>
 
           <button type="button" id="removeImageBtn" onclick="removeSelectedImage(event)"
@@ -1527,115 +1495,6 @@ async function clearHistory() {
   document.getElementById('reportCard').style.display = 'none';
   document.getElementById('receiptCard').style.display = 'none';
   await loadDiagnoses();
-}
-
-// ── Captura con cámara (incluye cámaras externas USB) ───────────
-let streamCamara = null;
-
-function detenerCamara() {
-  if (streamCamara) { streamCamara.getTracks().forEach(t => t.stop()); streamCamara = null; }
-}
-
-function setCamaraMsg(txt) {
-  const m = document.getElementById('camaraMsg');
-  if (m) { m.textContent = txt || ''; m.style.display = txt ? 'flex' : 'none'; }
-}
-
-async function listarCamaras(preferirId) {
-  const sel = document.getElementById('camaraSelect');
-  const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
-  sel.innerHTML = '';
-  devs.forEach((d, i) => {
-    const o = document.createElement('option');
-    o.value = d.deviceId;
-    o.textContent = d.label || ('Cámara ' + (i + 1));
-    sel.appendChild(o);
-  });
-  if (preferirId && devs.some(d => d.deviceId === preferirId)) sel.value = preferirId;
-  return devs;
-}
-
-async function iniciarCamara(deviceId) {
-  if (!navigator.mediaDevices?.getUserMedia) {
-    setCamaraMsg('Este navegador no permite usar la cámara (requiere HTTPS).');
-    return;
-  }
-  detenerCamara();
-  setCamaraMsg('Conectando cámara…');
-  const video = document.getElementById('camaraVideo');
-  const canvas = document.getElementById('camaraCanvas');
-  canvas.style.display = 'none';
-  video.style.display = 'block';
-  try {
-    streamCamara = await navigator.mediaDevices.getUserMedia({
-      video: deviceId ? { deviceId: { exact: deviceId } } : true
-    });
-    video.srcObject = streamCamara;
-    setCamaraMsg('');
-    const activo = streamCamara.getVideoTracks()[0]?.getSettings().deviceId;
-    await listarCamaras(activo); // ya con permiso, trae los nombres reales
-  } catch (err) {
-    setCamaraMsg('No se pudo acceder a la cámara: ' + err.message);
-  }
-}
-
-// Si se conecta o desconecta una cámara, actualizar la lista
-if (navigator.mediaDevices?.addEventListener) {
-  navigator.mediaDevices.addEventListener('devicechange', async () => {
-    const panel = document.getElementById('panelCamara');
-    if (!panel || panel.style.display === 'none') return;
-    const anterior = new Set([...document.getElementById('camaraSelect').options].map(o => o.value));
-    const devs = await listarCamaras(document.getElementById('camaraSelect').value);
-    const nueva = devs.find(d => !anterior.has(d.deviceId));
-    if (nueva) {                       // se acaba de conectar una → usarla
-      document.getElementById('camaraSelect').value = nueva.deviceId;
-      iniciarCamara(nueva.deviceId);
-      showToast('Cámara conectada: ' + (nueva.label || 'nueva cámara'), false);
-    } else if (streamCamara && !streamCamara.active) {
-      iniciarCamara(document.getElementById('camaraSelect').value);
-    }
-  });
-}
-
-function switchCaptura(tab) {
-  const panelArchivo = document.getElementById('panelArchivo');
-  const panelCamara  = document.getElementById('panelCamara');
-  const tabArchivo   = document.getElementById('tabArchivo');
-  const tabCamara    = document.getElementById('tabCamara');
-  const activa = tab === 'camara';
-
-  panelArchivo.style.display = activa ? 'none' : '';
-  panelCamara.style.display  = activa ? '' : 'none';
-  tabArchivo.style.background = activa ? 'var(--surface)' : 'var(--primary)';
-  tabArchivo.style.color      = activa ? 'var(--muted)'   : '#fff';
-  tabCamara.style.background  = activa ? 'var(--primary)' : 'var(--surface)';
-  tabCamara.style.color       = activa ? '#fff'           : 'var(--muted)';
-
-  if (activa) iniciarCamara(localStorage.getItem('detcutia_camara') || null);
-  else detenerCamara();
-}
-
-function tomarFoto() {
-  const video  = document.getElementById('camaraVideo');
-  const canvas = document.getElementById('camaraCanvas');
-  if (!streamCamara || !video.videoWidth) { showToast('La cámara aún no está lista', true); return; }
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-
-  try { localStorage.setItem('detcutia_camara', document.getElementById('camaraSelect').value); } catch (e) {}
-  detenerCamara();
-  switchCaptura('archivo');
-
-  // Mostrar la foto igual que una imagen subida (así funcionan ✕ y Analizar)
-  currentImageUrl = dataUrl;
-  const zone = document.getElementById('uploadZone');
-  zone.innerHTML = `<input type="file" id="fileInput" accept="image/*" style="display:none;"><img src="${dataUrl}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;">`;
-  attachFileListener();
-  const removeBtn = document.getElementById('removeImageBtn');
-  if (removeBtn) removeBtn.style.display = 'flex';
-  showToast('Foto tomada ✓ — presiona Analizar imagen', false);
 }
 
 function togglePerfil() {
