@@ -730,7 +730,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
 <div id="appScreen" style="display:none;">
 
   <header class="topbar">
-    <div class="topbar-left">
+    <div class="topbar-left" onclick="location.reload()" title="Recargar" style="cursor:pointer;">
       <div class="logo-icon">DET</div>
       <div class="logo-text">
         <div class="title">DET-Cut IA</div>
@@ -772,14 +772,46 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
         <input type="text" id="patientRef" class="input-field" placeholder="Ref. paciente (ej. PAC-0421)">
         <input type="email" id="patientEmail" class="input-field" placeholder="Correo del paciente (opcional)">
         <div style="position:relative;">
+          <!-- Pestañas de captura -->
+          <div style="display:flex;gap:0;margin-bottom:0;border-radius:10px 10px 0 0;overflow:hidden;border:1.5px solid var(--border);border-bottom:none;">
+            <button type="button" id="tabArchivo" onclick="switchCaptura('archivo')"
+              style="flex:1;padding:9px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--primary);color:#fff;transition:all 0.2s;">
+              📁 Subir archivo
+            </button>
+            <button type="button" id="tabCamara" onclick="switchCaptura('camara')"
+              style="flex:1;padding:9px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--surface);color:var(--muted);border-left:1.5px solid var(--border);transition:all 0.2s;">
+              📷 Cámara externa
+            </button>
+          </div>
+
           <!-- Panel: Subir archivo -->
           <div id="panelArchivo">
-            <label class="upload-zone" id="uploadZone" for="fileInput" >
+            <label class="upload-zone" id="uploadZone" for="fileInput" style="border-radius:0 0 10px 10px;border-top:none;">
               <input type="file" id="fileInput" accept="image/*">
               <div class="upload-icon">⬆</div>
               <p>Arrastra o haz clic aquí</p>
               <span>JPG, PNG desde tu dispositivo</span>
             </label>
+          </div>
+
+          <!-- Panel: Cámara -->
+          <div id="panelCamara" style="display:none;">
+            <div style="border:1.5px solid var(--border);border-radius:0 0 10px 10px;border-top:none;overflow:hidden;background:var(--surface);">
+              <select id="camaraSelect" onchange="iniciarCamara(this.value)"
+                style="width:100%;padding:8px 10px;font-size:12px;border:none;border-bottom:1px solid var(--border);background:var(--surface);color:inherit;"></select>
+              <div style="background:#000;position:relative;min-height:180px;">
+                <video id="camaraVideo" autoplay playsinline muted style="width:100%;max-height:220px;display:block;object-fit:cover;"></video>
+                <canvas id="camaraCanvas" style="display:none;"></canvas>
+                <div id="camaraMsg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;color:#fff;font-size:12px;"></div>
+                <button type="button" onclick="tomarFoto()"
+                  style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#2f7de6;color:#fff;border:none;border-radius:20px;padding:8px 24px;font-size:13px;font-weight:600;cursor:pointer;">
+                  📸 Tomar foto
+                </button>
+              </div>
+              <div style="padding:8px 10px;font-size:11px;color:var(--muted);">
+                Conecta la cámara por USB (o una que tu equipo reconozca como webcam) y selecciónala arriba.
+              </div>
+            </div>
           </div>
 
           <button type="button" id="removeImageBtn" onclick="removeSelectedImage(event)"
@@ -859,7 +891,6 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
           </div>
           <div class="report-content-col">
             <div><div class="section-title">Resumen Clínico</div><p class="summary-text" id="rSummary">—</p></div>
-            <div><div class="section-title">Medicamentos Sugeridos</div><div class="med-list" id="rMeds">—</div></div>
             <div><div class="section-title">Recomendaciones</div><p class="recs-text" id="rRecs">—</p></div>
             
             <div><div class="section-title">Diagnóstico Diferencial</div><div class="diff-list" id="rDiff">—</div></div>
@@ -912,70 +943,42 @@ const DISEASE_DATA = {
   'Psoriasis': {
     severity: 'Moderada',
     summary: 'La psoriasis es una enfermedad crónica de la piel que provoca la acumulación rápida de células cutáneas, formando escamas y manchas rojas que pueden picar o doler. Es una condición autoinmune y no es contagiosa.',
-    medications: [
-      { name: 'Betametasona crema 0.1%', dosage: '2 veces/día', purpose: 'Reduce la inflamación y el enrojecimiento local' },
-      { name: 'Calcipotriol pomada', dosage: '1-2 veces/día', purpose: 'Regula el crecimiento de las células de la piel' },
-      { name: 'Metotrexato 7.5mg', dosage: 'Semanal', purpose: 'Medicamento sistémico para casos moderados-severos' }
-    ],
     recommendations: 'Mantener la piel hidratada con emolientes sin fragancia. Evitar el estrés y los traumatismos en la piel. No rascar las lesiones. Consultar al dermatólogo para tratamiento sistémico si las lesiones son extensas.',
     differential: [{ disease: 'Dermatitis Atópica', probability: 0.12 }, { disease: 'Eczema', probability: 0.08 }]
   },
   'Eczema': {
     severity: 'Leve',
     summary: 'El eczema es una condición que hace que la piel se inflame y se ponga rojiza, generalmente como respuesta a desencadenantes ambientales o alérgicos. Se caracteriza por picor intenso, sequedad y formación de costras.',
-    medications: [
-      { name: 'Hidrocortisona crema 1%', dosage: '2-3 veces/día', purpose: 'Alivia la inflamación y el picor' },
-      { name: 'Tacrolimus ungüento 0.1%', dosage: '2 veces/día', purpose: 'Inmunomodulador tópico para zonas sensibles' },
-      { name: 'Loratadina 10mg', dosage: '1 vez/día', purpose: 'Antihistamínico para reducir el picor' }
-    ],
     recommendations: 'Bañarse con agua tibia y duración corta. Aplicar crema hidratante inmediatamente después del baño. Usar jabones sin fragancia. Evitar telas sintéticas.',
     differential: [{ disease: 'Psoriasis', probability: 0.15 }, { disease: 'Dermatitis Atópica', probability: 0.20 }]
   },
   'Dermatitis Atopica': {
     severity: 'Moderada',
     summary: 'La dermatitis atópica es una enfermedad inflamatoria crónica de la piel que suele comenzar en la infancia. Se caracteriza por piel seca, picor intenso y lesiones eccematosas. Tiene una base genética importante.',
-    medications: [
-      { name: 'Dupilumab 300mg', dosage: 'Cada 2 semanas (inyección)', purpose: 'Biológico de primera línea para DA moderada-severa' },
-      { name: 'Mometasona furoato 0.1%', dosage: '1 vez/día', purpose: 'Corticosteroide tópico de potencia media' },
-      { name: 'Cetirizina 10mg', dosage: 'Noche', purpose: 'Antihistamínico para el picor nocturno' }
-    ],
     recommendations: 'Rutina diaria de hidratación con emolientes ricos. Usar ropa suave de algodón. Mantener temperatura ambiental fresca. Control periódico con dermatólogo.',
     differential: [{ disease: 'Eczema', probability: 0.25 }, { disease: 'Psoriasis', probability: 0.10 }]
   },
   'Seborrheic Keratosis': {
     severity: 'Leve',
     summary: 'La queratosis seborreica es un crecimiento cutáneo benigno no canceroso muy común. Se caracteriza por lesiones de color marrón o negro con superficie verrugosa. No requieren tratamiento a menos que sean molestas.',
-    medications: [
-      { name: 'Ácido tricloroacético 35%', dosage: 'Aplicación clínica única', purpose: 'Cauterización química de la lesión' },
-      { name: 'Peróxido de hidrógeno 40%', dosage: 'Aplicación clínica', purpose: 'Tratamiento aprobado para queratosis seborreica' }
-    ],
     recommendations: 'No es necesario tratamiento si no molesta. Evitar rascarse. Consultar si la lesión cambia de tamaño, forma o color.',
     differential: [{ disease: 'Basal Cell Carcinoma', probability: 0.08 }, { disease: 'Warts Molluscum', probability: 0.12 }]
   },
   'Warts Molluscum': {
     severity: 'Leve',
     summary: 'El molluscum contagioso es una infección viral causada por el virus Molluscum contagiosum. Se manifiesta como pequeñas protuberancias redondas con una depresión central. Es altamente contagioso por contacto directo.',
-    medications: [
-      { name: 'Imiquimod crema 5%', dosage: '3 veces por semana', purpose: 'Estimula el sistema inmune para eliminar el virus' },
-      { name: 'Ácido salicílico 17%', dosage: '1 vez/día', purpose: 'Destruye el tejido infectado localmente' }
-    ],
     recommendations: 'Evitar tocar o rascar las lesiones. No compartir toallas ni artículos personales. Las lesiones suelen desaparecer solas en 6-12 meses.',
     differential: [{ disease: 'Seborrheic Keratosis', probability: 0.10 }, { disease: 'Eczema', probability: 0.07 }]
   },
   'Basal Cell Carcinoma': {
     severity: 'Severa',
     summary: 'El carcinoma basocelular es el tipo más común de cáncer de piel. Raramente se propaga a otros órganos pero REQUIERE ATENCIÓN MÉDICA URGENTE. La exposición prolongada al sol es el principal factor de riesgo.',
-    medications: [
-      { name: 'Vismodegib 150mg', dosage: '1 vez/día (oral)', purpose: 'Inhibidor de la vía Hedgehog para casos avanzados' },
-      { name: 'Imiquimod crema 5%', dosage: '5 veces/semana x 6 semanas', purpose: 'Para lesiones superficiales pequeñas' }
-    ],
     recommendations: '⚠ REFERIR AL DERMATÓLOGO DE INMEDIATO. El tratamiento principal es la extirpación quirúrgica. Usar protector solar SPF 50+ diariamente.',
     differential: [{ disease: 'Seborrheic Keratosis', probability: 0.15 }, { disease: 'Psoriasis', probability: 0.06 }]
   },
   'Sin patología identificable': {
     severity: 'Normal',
     summary: 'El modelo de inteligencia artificial no detectó ninguna patología cutánea con suficiente nivel de certeza en la imagen analizada. La piel parece saludable o la imagen puede no ser lo suficientemente clara para un análisis preciso.',
-    medications: [],
     recommendations: 'No se requiere tratamiento en este momento. Si presenta síntomas como picazón, enrojecimiento o cambios en la piel, consulte a un médico. Para un diagnóstico definitivo, consulte siempre a un dermatólogo.',
     differential: []
   }
@@ -1377,11 +1380,6 @@ function showDiagnosis(diag) {
   setTimeout(() => { document.getElementById('rBar').style.width = pct + '%'; }, 100);
   document.getElementById('rSummary').textContent = diag.summary ?? '—';
 
-  const medsEl = document.getElementById('rMeds');
-  medsEl.innerHTML = diag.medications && diag.medications.length > 0
-    ? diag.medications.map(m => `<div class="med-item"><div class="med-header"><span class="med-name">${m.name}</span><span class="med-dose">${m.dosage}</span></div><div class="med-purpose">${m.purpose}</div></div>`).join('')
-    : '<p style="color:var(--muted);font-size:13px;">Sin medicamentos sugeridos.</p>';
-
   document.getElementById('rRecs').textContent = diag.recommendations ?? '—';
 
   const diffEl = document.getElementById('rDiff');
@@ -1417,10 +1415,6 @@ function renderRecentList() {
 function renderReceipt(d) {
   const pct = Math.round(d.probability * 100);
   const date = new Date(d.created_at);
-  const meds = d.medications && d.medications.length > 0
-    ? d.medications.map((m, i) => `<div><strong>${i+1}. ${m.name}</strong></div><div>&nbsp;&nbsp;Dosis: ${m.dosage}</div><div>&nbsp;&nbsp;${m.purpose}</div>`).join('')
-    : '<div>Ninguno.</div>';
-
   const diff = d.differential && d.differential.length > 0
     ? `<div class="r-line"></div><div class="r-bold">DIAG. DIFERENCIAL</div>${d.differential.map(df => `<div class="r-row"><span>${df.disease}</span><span>${Math.round(df.probability*100)}%</span></div>`).join('')}`
     : '';
@@ -1441,8 +1435,6 @@ function renderReceipt(d) {
     <div class="r-line"></div>
     <div class="r-bold">RESUMEN CLINICO</div>
     <div style="font-size:9.5px;text-align:justify;">${d.summary ?? '-'}</div>
-    <div class="r-line"></div>
-    <div class="r-bold">MEDICAMENTOS</div>${meds}
     <div class="r-line"></div>
     <div class="r-bold">RECOMENDACIONES</div>
     <div style="font-size:9.5px;text-align:justify;">${d.recommendations ?? '-'}</div>
@@ -1470,6 +1462,115 @@ async function clearHistory() {
   await loadDiagnoses();
 }
 
+// ── Captura con cámara (incluye cámaras externas USB) ───────────
+let streamCamara = null;
+
+function detenerCamara() {
+  if (streamCamara) { streamCamara.getTracks().forEach(t => t.stop()); streamCamara = null; }
+}
+
+function setCamaraMsg(txt) {
+  const m = document.getElementById('camaraMsg');
+  if (m) { m.textContent = txt || ''; m.style.display = txt ? 'flex' : 'none'; }
+}
+
+async function listarCamaras(preferirId) {
+  const sel = document.getElementById('camaraSelect');
+  const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+  sel.innerHTML = '';
+  devs.forEach((d, i) => {
+    const o = document.createElement('option');
+    o.value = d.deviceId;
+    o.textContent = d.label || ('Cámara ' + (i + 1));
+    sel.appendChild(o);
+  });
+  if (preferirId && devs.some(d => d.deviceId === preferirId)) sel.value = preferirId;
+  return devs;
+}
+
+async function iniciarCamara(deviceId) {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    setCamaraMsg('Este navegador no permite usar la cámara (requiere HTTPS).');
+    return;
+  }
+  detenerCamara();
+  setCamaraMsg('Conectando cámara…');
+  const video = document.getElementById('camaraVideo');
+  const canvas = document.getElementById('camaraCanvas');
+  canvas.style.display = 'none';
+  video.style.display = 'block';
+  try {
+    streamCamara = await navigator.mediaDevices.getUserMedia({
+      video: deviceId ? { deviceId: { exact: deviceId } } : true
+    });
+    video.srcObject = streamCamara;
+    setCamaraMsg('');
+    const activo = streamCamara.getVideoTracks()[0]?.getSettings().deviceId;
+    await listarCamaras(activo); // ya con permiso, trae los nombres reales
+  } catch (err) {
+    setCamaraMsg('No se pudo acceder a la cámara: ' + err.message);
+  }
+}
+
+// Si se conecta o desconecta una cámara, actualizar la lista
+if (navigator.mediaDevices?.addEventListener) {
+  navigator.mediaDevices.addEventListener('devicechange', async () => {
+    const panel = document.getElementById('panelCamara');
+    if (!panel || panel.style.display === 'none') return;
+    const anterior = new Set([...document.getElementById('camaraSelect').options].map(o => o.value));
+    const devs = await listarCamaras(document.getElementById('camaraSelect').value);
+    const nueva = devs.find(d => !anterior.has(d.deviceId));
+    if (nueva) {                       // se acaba de conectar una → usarla
+      document.getElementById('camaraSelect').value = nueva.deviceId;
+      iniciarCamara(nueva.deviceId);
+      showToast('Cámara conectada: ' + (nueva.label || 'nueva cámara'), false);
+    } else if (streamCamara && !streamCamara.active) {
+      iniciarCamara(document.getElementById('camaraSelect').value);
+    }
+  });
+}
+
+function switchCaptura(tab) {
+  const panelArchivo = document.getElementById('panelArchivo');
+  const panelCamara  = document.getElementById('panelCamara');
+  const tabArchivo   = document.getElementById('tabArchivo');
+  const tabCamara    = document.getElementById('tabCamara');
+  const activa = tab === 'camara';
+
+  panelArchivo.style.display = activa ? 'none' : '';
+  panelCamara.style.display  = activa ? '' : 'none';
+  tabArchivo.style.background = activa ? 'var(--surface)' : 'var(--primary)';
+  tabArchivo.style.color      = activa ? 'var(--muted)'   : '#fff';
+  tabCamara.style.background  = activa ? 'var(--primary)' : 'var(--surface)';
+  tabCamara.style.color       = activa ? '#fff'           : 'var(--muted)';
+
+  if (activa) iniciarCamara(localStorage.getItem('detcutia_camara') || null);
+  else detenerCamara();
+}
+
+function tomarFoto() {
+  const video  = document.getElementById('camaraVideo');
+  const canvas = document.getElementById('camaraCanvas');
+  if (!streamCamara || !video.videoWidth) { showToast('La cámara aún no está lista', true); return; }
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+  try { localStorage.setItem('detcutia_camara', document.getElementById('camaraSelect').value); } catch (e) {}
+  detenerCamara();
+  switchCaptura('archivo');
+
+  // Mostrar la foto igual que una imagen subida (así funcionan ✕ y Analizar)
+  currentImageUrl = dataUrl;
+  const zone = document.getElementById('uploadZone');
+  zone.innerHTML = `<input type="file" id="fileInput" accept="image/*" style="display:none;"><img src="${dataUrl}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;">`;
+  attachFileListener();
+  const removeBtn = document.getElementById('removeImageBtn');
+  if (removeBtn) removeBtn.style.display = 'flex';
+  showToast('Foto tomada ✓ — presiona Analizar imagen', false);
+}
+
 function togglePerfil() {
   const modal = document.getElementById('perfilModal');
   modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
@@ -1495,10 +1596,9 @@ async function exportMonth() {
   if (error) { showToast('Error: ' + error.message, true); return; }
   if (!data || data.length === 0) { showToast('No hay diagnósticos este mes.', false); return; }
 
-  const headers = ['ID', 'Fecha', 'Hora', 'Referencia Paciente', 'Diagnostico', 'Confianza (%)', 'Severidad', 'Resumen Clinico', 'Recomendaciones', 'Medicamentos'];
+  const headers = ['ID', 'Fecha', 'Hora', 'Referencia Paciente', 'Diagnostico', 'Confianza (%)', 'Severidad', 'Resumen Clinico', 'Recomendaciones'];
   const rows = data.map(d => {
     const fecha = new Date(d.created_at);
-    const meds = Array.isArray(d.medications) ? d.medications.map(m => m.name).join(' | ') : '';
     return [
       d.id ?? '',
       fecha.toLocaleDateString('es-SV'),
@@ -1508,8 +1608,7 @@ async function exportMonth() {
       Math.round((d.probability ?? 0) * 100),
       d.severity ?? '',
       d.summary ?? '',
-      d.recommendations ?? '',
-      meds
+      d.recommendations ?? ''
     ].map(c => `"${String(c).replace(/"/g, '""')}"`).join(',');
   });
 
@@ -1543,7 +1642,7 @@ async function enviarPorCorreo() {
     const res = await fetch(BACKEND_URL + '/send-diagnosis-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
-      body: JSON.stringify({ email, diagnosis: diag })
+      body: JSON.stringify({ email, diagnosis: (({ medications, ...resto }) => resto)(diag) })
     });
     const result = await res.json();
     if (!res.ok || result.error) throw new Error(result.error || ('Error ' + res.status));
