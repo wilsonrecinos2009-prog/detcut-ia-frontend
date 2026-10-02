@@ -772,21 +772,9 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
         <input type="text" id="patientRef" class="input-field" placeholder="Ref. paciente (ej. PAC-0421)">
         <input type="email" id="patientEmail" class="input-field" placeholder="Correo del paciente (opcional)">
         <div style="position:relative;">
-          <!-- Pestañas de captura -->
-          <div style="display:flex;gap:0;margin-bottom:0;border-radius:10px 10px 0 0;overflow:hidden;border:1.5px solid var(--border);border-bottom:none;">
-            <button type="button" id="tabArchivo" onclick="switchCaptura('archivo')"
-              style="flex:1;padding:9px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--primary);color:#fff;transition:all 0.2s;">
-              📁 Subir archivo
-            </button>
-            <button type="button" id="tabCamara" onclick="switchCaptura('camara')"
-              style="flex:1;padding:9px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--surface);color:var(--muted);border-left:1.5px solid var(--border);transition:all 0.2s;">
-              📷 Usar cámara
-            </button>
-          </div>
-
           <!-- Panel: Subir archivo -->
           <div id="panelArchivo">
-            <label class="upload-zone" id="uploadZone" for="fileInput" style="border-radius:0 0 10px 10px;border-top:none;">
+            <label class="upload-zone" id="uploadZone" for="fileInput" >
               <input type="file" id="fileInput" accept="image/*">
               <div class="upload-icon">⬆</div>
               <p>Arrastra o haz clic aquí</p>
@@ -794,17 +782,6 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
             </label>
           </div>
 
-          <!-- Panel: Cámara -->
-          <div id="panelCamara" style="display:none;">
-            <div style="border:1.5px solid var(--border);border-radius:0 0 10px 10px;border-top:none;overflow:hidden;background:#000;position:relative;">
-              <video id="camaraVideo" autoplay playsinline style="width:100%;max-height:220px;display:block;object-fit:cover;"></video>
-              <canvas id="camaraCanvas" style="display:none;"></canvas>
-              <button type="button" onclick="tomarFoto()"
-                style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#2f7de6;color:#fff;border:none;border-radius:20px;padding:8px 24px;font-size:13px;font-weight:600;cursor:pointer;">
-                📸 Tomar foto
-              </button>
-            </div>
-          </div>
           <button type="button" id="removeImageBtn" onclick="removeSelectedImage(event)"
             style="display:none;position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;
             background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;
@@ -1491,71 +1468,6 @@ async function clearHistory() {
   document.getElementById('reportCard').style.display = 'none';
   document.getElementById('receiptCard').style.display = 'none';
   await loadDiagnoses();
-}
-
-// ── Pestañas de captura ─────────────────────────────────────────
-let streamCamara = null;
-
-function switchCaptura(tab) {
-  const panelArchivo = document.getElementById('panelArchivo');
-  const panelCamara  = document.getElementById('panelCamara');
-  const tabArchivo   = document.getElementById('tabArchivo');
-  const tabCamara    = document.getElementById('tabCamara');
-
-  if (tab === 'archivo') {
-    panelArchivo.style.display = '';
-    panelCamara.style.display  = 'none';
-    tabArchivo.style.background = 'var(--primary)';
-    tabArchivo.style.color      = '#fff';
-    tabCamara.style.background  = 'var(--surface)';
-    tabCamara.style.color       = 'var(--muted)';
-    // Detener cámara si estaba activa
-    if (streamCamara) { streamCamara.getTracks().forEach(t => t.stop()); streamCamara = null; }
-  } else {
-    panelArchivo.style.display = 'none';
-    panelCamara.style.display  = '';
-    tabCamara.style.background  = 'var(--primary)';
-    tabCamara.style.color       = '#fff';
-    tabArchivo.style.background = 'var(--surface)';
-    tabArchivo.style.color      = 'var(--muted)';
-    // Activar cámara
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      .then(stream => {
-        streamCamara = stream;
-        document.getElementById('camaraVideo').srcObject = stream;
-      })
-      .catch(() => {
-        // Si falla cámara trasera, intentar cualquier cámara
-        navigator.mediaDevices.getUserMedia({ video: true })
-          .then(stream => {
-            streamCamara = stream;
-            document.getElementById('camaraVideo').srcObject = stream;
-          })
-          .catch(err => showToast('No se pudo acceder a la cámara: ' + err.message, true));
-      });
-  }
-}
-
-function tomarFoto() {
-  const video  = document.getElementById('camaraVideo');
-  const canvas = document.getElementById('camaraCanvas');
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-  currentImageUrl = dataUrl;
-
-  // Mostrar preview en la zona
-  const zone = document.getElementById('uploadZone') || document.getElementById('panelCamara').querySelector('div');
-  const video2 = document.getElementById('camaraVideo');
-  video2.style.display = 'none';
-  canvas.style.display = 'block';
-  canvas.style.width   = '100%';
-  canvas.style.maxHeight = '220px';
-  canvas.style.objectFit = 'cover';
-
-  showToast('Foto tomada ✓ — presiona Analizar imagen', false);
-  if (streamCamara) { streamCamara.getTracks().forEach(t => t.stop()); streamCamara = null; }
 }
 
 function togglePerfil() {
